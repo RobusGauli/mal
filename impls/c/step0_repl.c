@@ -50,7 +50,7 @@ string_result_t get_input(FILE* file) {
   return string_result__new(buffer, true);
 }
 
-int main() {
+int main(void) {
   for(;;) {
     printf("user> ");
     string_result_t result__input = get_input(stdin);
