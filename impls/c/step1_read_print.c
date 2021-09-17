@@ -6,19 +6,21 @@
 #include <errno.h>
 #include <stdbool.h>
 
+#include "reader.h"
+
 
 typedef char* string;
 
-string READ(string expr) {
-  return expr;
+mal_t READ(string expr) {
+  return read_str(expr);
 }
 
-string EVAL(string expr) {
-  return expr;
+mal_t EVAL(mal_t mal) {
+  return mal;
 }
 
-string PRINT(string expr) {
-  return expr;
+string PRINT(mal_t mal) {
+  return "";
 }
 
 string rep(string expr) {
@@ -103,9 +105,10 @@ int main(void) {
       continue;
     }
 
-    string read_result = READ(string_result__val(&result));
-    string eval_result = EVAL(read_result);
+    mal_t read_result = READ(string_result__val(&result));
+    mal_t eval_result = EVAL(read_result);
     string print_result = PRINT(eval_result);
+
     printf("%s\n", print_result);
 
     string_result__free(&result);
