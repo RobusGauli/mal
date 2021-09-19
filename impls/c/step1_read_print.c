@@ -11,15 +11,55 @@
 
 typedef char* string;
 
-mal_t READ(string expr) {
+AST_t* READ(string expr) {
   return read_str(expr);
 }
 
-mal_t EVAL(mal_t mal) {
-  return mal;
+AST_t* EVAL(AST_t* ast) {
+  return ast;
 }
 
-string PRINT(mal_t mal) {
+void print_symbol(Node_symbol_t symbol) {
+  char buffer[symbol.len+1];
+  for (size_t i = 0; i < symbol.len; i++) {
+    buffer[i] = symbol.memptr[i];
+  }
+  buffer[symbol.len] = 0;
+  printf("%s", buffer);
+}
+
+void debug_symbol(Node_t node) {
+  print_symbol(node.node_val.node_symbol);
+}
+void debug(AST_t* ast) {
+  // just
+  cvector_nodes_t nodes = ast -> cvector_nodes;
+  cvector_nodes_iterator_t iterator;
+  cvector_iterator__init(&iterator, &nodes);
+
+  for(;;) {
+    if (cvector_iterator__done(&iterator)) break;
+    Node_t node = cvector_iterator__next(&iterator);
+    if (node.node_type == NODE__SYMBOL) {
+      debug_symbol(node);
+    }
+  }
+
+  if(ast -> next) {
+    // if that is the case
+    printf("(");
+    debug(ast -> next);
+    printf(")");
+  }
+
+
+
+
+}
+
+char* PRINT(AST_t* ast) {
+  // debug AST
+  debug(ast);
   return "";
 }
 
@@ -105,8 +145,8 @@ int main(void) {
       continue;
     }
 
-    mal_t read_result = READ(string_result__val(&result));
-    mal_t eval_result = EVAL(read_result);
+    AST_t* read_result = READ(string_result__val(&result));
+    AST_t* eval_result = EVAL(read_result);
     string print_result = PRINT(eval_result);
 
     printf("%s\n", print_result);

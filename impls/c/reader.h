@@ -44,15 +44,51 @@ CVector(Token_t) cvector_token_t;
 CVector_iterator(cvector_token_t) cvector_token_iterator_t;
 
 typedef struct {
-
   cvector_token_t cvector_tokens;
   cvector_token_iterator_t cvector_tokens_iterator;
 } Reader;
 
-typedef struct {
-  // don't know but will figure out soon
-} mal_t;
+typedef enum Node_type_e  {
+  NODE__INT,
+  NODE__COMMENT,
+  NODE__SYMBOL,
+} Node_type_e;
 
-mal_t read_str(char *expr);
+typedef struct Node_int_t{
+  int value;
+} Node_int_t;
+
+typedef struct Node_symbol_t{
+  char* memptr;
+  size_t len;
+} Node_symbol_t;
+
+
+typedef struct Node_comment_t {
+  char* memptr;
+  size_t len;
+} Node_comment_t;
+
+
+typedef struct Node_t{
+  Node_type_e node_type;
+  union {
+    Node_int_t node_int;
+    Node_symbol_t node_symbol;
+    Node_comment_t node_comment;
+  } node_val;
+} Node_t;
+
+CVector(Node_t) cvector_nodes_t;
+CVector_iterator(cvector_nodes_t) cvector_nodes_iterator_t;
+
+typedef struct AST_t {
+  cvector_nodes_t cvector_nodes;
+  struct AST_t* next;
+} AST_t;
+
+AST_t* read_str(char *expr);
+void read_list(AST_t* ast, Reader* reader);
+void read_form(AST_t* ast, Reader* reader);
 
 #endif

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "stdio.h"
 #include "reader.h"
 
@@ -192,6 +193,7 @@ static cvector_token_t tokenize(char* string) {
         cvector_iterator__next(&cvector_char_iterator);
         len++;
       }
+      continue;
     }
 
     size_t len = 1;
@@ -248,30 +250,69 @@ static bool reader__done(Reader* reader) {
   return cvector_iterator__done(&(reader -> cvector_tokens_iterator));
 }
 
-mal_t read_form(Reader* reader) {
-  for (;;) {
-    if (reader__done(reader)) break;
-    Token_t token = reader__next(reader);
-    printf("Token Type: %s\n", token__stringify(token.token_type));
+
+void token__print_value(Token_t token) {
+  char* memptr = token.value;
+  char buffer[token.value_length+1];
+  for (size_t i = 0; i < token.value_length; i++) {
+    buffer[i] = memptr[i];
   }
-  return (mal_t){};
+  buffer[token.value_length] = 0;
+  printf("%s\n", buffer);
 }
 
-mal_t read_str(char* string) {
+
+void read_list(AST_t* ast, Reader* reader) {
+  assert(reader__peek(reader).token_type == SPECIAL_SINGLE_CHAR__LEFT_PAREN);
+  reader__next(reader); // skip the left paren
+  for(;;) {
+    if (reader__done(reader)) break;
+    Token_t token = reader__peek(reader);
+    if (token.token_type == SPECIAL_SINGLE_CHAR__RIGHT_PAREN) {
+      reader__next(reader);
+      break;
+    }
+    read_form(ast, reader);
+  }
+}
+
+void read_form(AST_t* ast, Reader* reader) {
+
+  // Init the node
+  for (;;) {
+    if (reader__done(reader)) break;
+    Token_t token = reader__peek(reader);
+    if(token.token_type == SPECIAL_SINGLE_CHAR__LEFT_PAREN) {
+      AST_t* next = malloc(sizeof(AST_t));
+      ast -> next = next;
+      cvector__init(&(next -> cvector_nodes));
+      read_list(next, reader);
+    } else {
+      Node_t node;
+      node.node_type = NODE__SYMBOL;
+      node.node_val.node_symbol = (Node_symbol_t){.memptr=token.value, .len=token.value_length};
+      cvector__add(&(ast -> cvector_nodes), node);
+      reader__next(reader);
+      continue;
+    }
+  }
+}
+
+AST_t* read_str(char* string) {
 
   cvector_token_t tokens = tokenize(string);
   cvector_token_iterator_t tokens_iterator = iterator(&tokens);
-
-
-
 
   Reader reader = (Reader) {
     .cvector_tokens=tokens,
     .cvector_tokens_iterator=tokens_iterator
   };
 
-  mal_t result = read_form(&reader);
+  AST_t* ast = malloc(sizeof(AST_t));
+  ast -> next = NULL;
+  cvector__init(&(ast -> cvector_nodes));
+  read_form(ast, &reader);
   cvector__free(&reader.cvector_tokens);
 
-  return result;
+  return ast;
 }
