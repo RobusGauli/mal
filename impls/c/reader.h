@@ -2,93 +2,95 @@
 #define READER_H
 
 #include "deps/cvector/cvector.h"
-// create a type that defines Cvectorof char
-CVector(char) cvector_char_t;
-CVector_iterator(cvector_char_t) cvector_char_iterator_t;
 
-typedef enum {
-  COMMENT,
-  SYMBOL,
-  NUMBER,
-  SEMI_COLON,
-  OTHER,
-  SPECIAL_TWO_CHARS__TILDA_AT,
-  SPECIAL_SINGLE_CHAR__AT,
-  SPECIAL_SINGLE_CHAR__LEFT_SQ_BR,
-  SPECIAL_SINGLE_CHAR__RIGHT_SQ_BR,
-  SPECIAL_SINGLE_CHAR__LEFT_CURLY_BR,
-  SPECIAL_SINGLE_CHAR__RIGHT_CURLY_BR,
-  SPECIAL_SINGLE_CHAR__LEFT_PAREN,
-  SPECIAL_SINGLE_CHAR__RIGHT_PAREN,
-  SPECIAL_SINGLE_CHAR__APOSTROPHE,
-  SPECIAL_SINGLE_CHAR__WEIRD,
-  SPECIAL_SINGLE_CHAR__TILDA,
-  SPECIAL_SINGLE_CHAR__CARRAT,
-} Token_type_e;
+enum Tokentype{
+  TOKEN__COMMENT,
+  TOKEN__SYMBOL,
+  TOKEN__NUMBER,
+  TOKEN__SEMICOLON,
+  TOKEN__OTHER,
+  TOKEN__TILDA_AT,
+  TOKEN__AT,
+  TOKEN__LEFT_SQ_BR,
+  TOKEN__RIGHT_SQ_BR,
+  TOKEN__LEFT_CURLY_BR,
+  TOKEN__RIGHT_CURLY_BR,
+  TOKEN__LEFT_PAREN,
+  TOKEN__RIGHT_PAREN,
+  TOKEN__APOSTROPHE,
+  TOKEN__WEIRD,
+  TOKEN__TILDA,
+  TOKEN__CARRAT,
+};
 
-typedef struct {
-  Token_type_e token_type;
-  char *value;
-  size_t value_length;
-} Token_t;
+typedef struct Token {
+  enum Tokentype tokentype;
+  char *mem;
+  size_t len;
+} Token;
 
-Token_t token__new(Token_type_e token_type);
+static Token token__new(enum Tokentype tokentype) {
+  return (Token){.tokentype=tokentype};
+}
 
-Token_t token__new_with_val(Token_type_e token_type, char *value,
-                            size_t value_length);
+static Token token__new_with_val(enum Tokentype tokentype, char *mem, size_t len) {
+  return ( Token ){.tokentype=tokentype, .mem=mem, .len=len};
+}
 
-char *token__stringify(Token_type_e token_type);
+CVector(Token) cvector_tokens_t;
 
-CVector(Token_t) cvector_token_t;
-
-CVector_iterator(cvector_token_t) cvector_token_iterator_t;
+CVector_iterator(cvector_tokens_t) cvector_iterator_tokens_t;
 
 typedef struct {
-  cvector_token_t cvector_tokens;
-  cvector_token_iterator_t cvector_tokens_iterator;
+  cvector_tokens_t cvector_tokens;
+  cvector_iterator_tokens_t cvector_iterator_tokens_t;
 } Reader;
 
-typedef enum Node_type_e  {
+typedef enum NodeType  {
   NODE__INT,
   NODE__COMMENT,
   NODE__SYMBOL,
-} Node_type_e;
+  NODE__VECTOR,
+  NODE__EMPTY,
+} NodeType;
 
-typedef struct Node_int_t{
-  int value;
-} Node_int_t;
+typedef struct NodeInt {
+  int val;
+} NodeInt;
 
-typedef struct Node_symbol_t{
-  char* memptr;
+typedef struct NodeSymbol {
+  char* mem;
   size_t len;
-} Node_symbol_t;
+} NodeSymbol;
 
 
-typedef struct Node_comment_t {
-  char* memptr;
+typedef struct NodeComment {
+  char* mem;
   size_t len;
-} Node_comment_t;
+} NodeComment;
+
+typedef struct NodeVector {
+  void* mem;
+} NodeVector;
 
 
-typedef struct Node_t{
-  Node_type_e node_type;
+typedef struct Node {
+  NodeType nodetype;
   union {
-    Node_int_t node_int;
-    Node_symbol_t node_symbol;
-    Node_comment_t node_comment;
-  } node_val;
-} Node_t;
+    NodeInt nodeint;
+    NodeSymbol nodesymbol;
+    NodeVector nodevector;
+    NodeComment nodecomment;
+  } nodeval;
+} Node;
 
-CVector(Node_t) cvector_nodes_t;
-CVector_iterator(cvector_nodes_t) cvector_nodes_iterator_t;
+CVector(Node) cvector_nodes_t;
+CVector_iterator(cvector_nodes_t) cvector_iterator_nodes_t;
 
-typedef struct AST_t {
-  cvector_nodes_t cvector_nodes;
-  struct AST_t* next;
-} AST_t;
+Node parse(cvector_iterator_tokens_t* cvector_iterator_tokens);
 
-AST_t* read_str(char *expr);
-void read_list(AST_t* ast, Reader* reader);
-void read_form(AST_t* ast, Reader* reader);
+Node read_str(char *expr);
+Node read_list(Node node, Reader* reader);
+Node read_form(Node node, Reader* reader);
 
 #endif

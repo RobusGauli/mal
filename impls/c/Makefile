@@ -16,13 +16,19 @@ $(s0): $(s0_source)
 	$(CC) -o $@ $(CFLAGS) $(s0_source)
 
 reader_source = reader.c
+debug_source = debug.c
 
-reader: reader.c
+reader: $(reader_source)
 	$(CC) -o $@ -c $(CFLAGS) $(reader_source)
 
-$(s1): $(s1_source) reader
-	$(CC) -o $@ $(CFLAGS) reader $(s1_source)
+debug: $(debug_source)
+	$(CC) -o $@ -c $(CFLAGS) $(debug_source)
 
+$(s1): $(s1_source) reader debug
+	$(CC) -o $@ $(CFLAGS) reader debug $(s1_source) -lreadline
+
+.PHONY clean:
+	rm -rf reader debug step1_read_print
 
 current: $(s1)
 	./$(s1)
