@@ -7,6 +7,7 @@ enum Tokentype{
   TOKEN__COMMENT,
   TOKEN__SYMBOL,
   TOKEN__NUMBER,
+  TOKEN__STRING,
   TOKEN__SEMICOLON,
   TOKEN__OTHER,
   TOKEN__TILDA_AT,
@@ -48,6 +49,7 @@ typedef struct {
 
 typedef enum NodeType  {
   NODE__INT,
+  NODE__STRING,
   NODE__COMMENT,
   NODE__SYMBOL,
   NODE__VECTOR,
@@ -69,6 +71,11 @@ typedef struct NodeComment {
   size_t len;
 } NodeComment;
 
+typedef struct NodeString {
+  char* mem;
+  size_t len;
+} NodeString;
+
 typedef struct NodeVector {
   void* mem;
 } NodeVector;
@@ -80,6 +87,7 @@ typedef struct Node {
     NodeInt nodeint;
     NodeSymbol nodesymbol;
     NodeVector nodevector;
+    NodeString nodestring;
     NodeComment nodecomment;
   } nodeval;
 } Node;
@@ -87,10 +95,9 @@ typedef struct Node {
 CVector(Node) cvector_nodes_t;
 CVector_iterator(cvector_nodes_t) cvector_iterator_nodes_t;
 
-Node parse(cvector_iterator_tokens_t* cvector_iterator_tokens);
 
 Node read_str(char *expr);
-Node read_list(Node node, Reader* reader);
-Node read_form(Node node, Reader* reader);
+Node read_list(cvector_iterator_tokens_t* cvector_iterator);
+Node read_form(cvector_iterator_tokens_t* cvector_iterator);
 
 #endif
