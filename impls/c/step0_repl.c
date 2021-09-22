@@ -107,7 +107,6 @@ int main(void) {
     string eval_result = EVAL(read_result);
     string print_result = PRINT(eval_result);
     printf("%s\n", print_result);
-
     string_result__free(&result);
   }
 }

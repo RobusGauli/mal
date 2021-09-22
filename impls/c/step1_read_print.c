@@ -33,10 +33,10 @@ int main(void) {
       exit(1);
     }
 
+    // create environment
     Node node = READ(input);
     Node evaluated_node = EVAL(node);
     char* result = PRINT(evaluated_node);
-
     printf("%s\n", result);
   }
 

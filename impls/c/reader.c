@@ -1,6 +1,20 @@
 #include <assert.h>
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <inttypes.h>
+
 #include "reader.h"
+
+
+bool is_valid_integer(char* mem, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    if (mem[i] < 48 || mem[i] > 57) {
+      return false;
+    }
+  }
+  return true;
+}
 
 void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
   size_t index = 0;
@@ -8,7 +22,7 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
   for(;;) {
     if (index >= strlen(input)) break;
 
-    if (input[index] == ' ' || input[index] == '\n' || input[index] == ',') {
+    if (input[index] == ' ' || input[index] == '\n' || input[index] == ',' || input[index] == '\r') {
       ++index;
       continue;
     }
@@ -54,7 +68,6 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
     }
 
     if (input[index] == '"') {
-      size_t len = 0;
       char* mem = &(input[index]);
       for(;;) {
         if (index >= strlen(input)) {
@@ -63,8 +76,7 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
         }
         ++index;
         if (input[index] == '\\') {
-          // ignore whatever comes next
-          ++index;
+          index++;
           continue;
         }
 
@@ -103,10 +115,15 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
       ++index;
       ++len;
     }
-    Token token = {.tokentype=TOKEN__SYMBOL, .mem=mem, .len=len};
-    cvector__add(tokens, token);
-    continue;
-  }
+    if (is_valid_integer(mem, len)) {
+      Token token = {.tokentype=TOKEN__NUMBER, .mem=mem, .len=len};
+      cvector__add(tokens, token);
+    } else {
+      Token token = {.tokentype=TOKEN__SYMBOL, .mem=mem, .len=len};
+      cvector__add(tokens, token);
+    }
+
+    }
 }
 
 Node node_vector__new(cvector_nodes_t* cvector_nodes) {
@@ -124,13 +141,44 @@ Node node_comment__new(char* mem, size_t len) {
   return node;
 }
 
-Node node_int__new(int val) {
-  Node node = {.nodetype=NODE__INT, .nodeval={.nodeint={.val=val}}};
+// // len is 3
+// 344
+// ^
+
+Node node_int__new(char* mem, size_t len) {
+  // convert that thint to actual int
+  char* endptr = mem+len-1;
+  uintmax_t num = strtoumax(mem, &endptr, 10);
+  Node node = {.nodetype=NODE__INT, .nodeval={.nodeint={.val=num}}};
+  return node;
+}
+
+Node node_eof__new(void) {
+  Node node = {.nodetype=NODE__EOF};
   return node;
 }
 
 Node node_string__new(char* mem, size_t len) {
-  Node node = {.nodetype=NODE__STRING, .nodeval={.nodestring = {.mem=mem, .len=len}}};
+  cvector_chars_t cvector_chars;
+  cvector__init(&cvector_chars);
+
+  size_t index = 0;
+  while(index < len) {
+    char ch = mem[index++];
+    if (ch == '\\') {
+      if (index >= len) {
+        continue;
+      }
+      ch = mem[index];
+      cvector__add(&cvector_chars, ch);
+      ++index;
+      continue;
+    }
+    cvector__add(&cvector_chars, ch);
+  }
+  Node node = {.nodetype=NODE__STRING,
+    .nodeval={.nodestring = {.cvector_chars=cvector_chars}}};
+
   return node;
 }
 
@@ -171,6 +219,10 @@ Node read_atom(cvector_iterator_tokens_t* cvector_iterator_tokens) {
 
   if (token.tokentype == TOKEN__STRING) {
     return node_string__new(token.mem, token.len);
+  }
+
+  if (token.tokentype == TOKEN__NUMBER) {
+    return node_int__new(token.mem, token.len);
   }
 
   return node_symbol__new(token.mem, token.len);

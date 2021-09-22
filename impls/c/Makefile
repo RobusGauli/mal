@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS =  -std=c11 -g
 
-CFILES = header.c
+CLIBS = -lreadline
 
 s0 = step0_repl
 s0_source = $(s0).c
@@ -12,8 +12,15 @@ DEFAULT_GOAL: current
 s1 = step1_read_print
 s1_source = $(s1).c
 
+
 $(s0): $(s0_source)
 	$(CC) -o $@ $(CFLAGS) $(s0_source)
+
+s2 = step2_eval
+s2_source = $(s2).c
+
+$(s2): $(s2_source) reader debug
+	$(CC) -o $@ $(CFLAGS) reader debug $(s2_source) $(CLIBS)
 
 reader_source = reader.c
 debug_source = debug.c
@@ -25,10 +32,14 @@ debug: $(debug_source)
 	$(CC) -o $@ -c $(CFLAGS) $(debug_source)
 
 $(s1): $(s1_source) reader debug
-	$(CC) -o $@ $(CFLAGS) reader debug $(s1_source) -lreadline
+	$(CC) -o $@ $(CFLAGS) reader debug $(s1_source) $(CLIBS)
+
+$(s2): $(s2_source) reader debug
+	$(CC) -o $@ $(CFLAGS) reader debug $(s2_source) $(CLIBS)
+
 
 .PHONY clean:
 	rm -rf reader debug step1_read_print
 
-current: $(s1)
-	./$(s1)
+current: $(s2)
+	./$(s2)

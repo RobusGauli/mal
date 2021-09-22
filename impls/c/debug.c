@@ -37,34 +37,32 @@ void debug_vector(Node node) {
 
 void debug_comment(Node node) {
   size_t len = node.nodeval.nodecomment.len;
-  char* mem = node.nodeval.nodecomment.mem;
-  char buffer[len+1];
+  char *mem = node.nodeval.nodecomment.mem;
+  char buffer[len + 1];
   memcpy(buffer, mem, len);
   buffer[len] = 0;
   printf("%s", buffer);
 }
 
-CVector(char) cvector_chars_t;
 void debug_string(Node node) {
   size_t len = node.nodeval.nodestring.len;
-  char* mem = node.nodeval.nodestring.mem;
-  cvector_chars_t cvector_chars;
-  cvector__init(&cvector_chars);
-  for(size_t i = 0; i < len; ++i) {
-    if (mem[i] == '\\') {
-      // that means we need to avoid it
-      continue;
-    }
-    cvector__add(&cvector_chars, mem[i]);
+  cvector_chars_t cvector_chars = node.nodeval.nodestring.cvector_chars;
+  char *value = "";
+  if (cvector__size(&cvector_chars) > 0) {
+    value = cvector__wrapped_buffer(&cvector_chars);
   }
-  cvector__add(&cvector_chars, 0);
-  printf("\"%s\"", cvector__wrapped_buffer(&cvector_chars));
+  printf("\"%s\"", value);
+}
+
+void debug_eof(Node node) { printf("EOF ,"); }
+
+void debug_int(Node node) {
+  printf("%d", node.nodeval.nodeint.val);
 }
 
 void debug(Node node) {
   switch (node.nodetype) {
   case NODE__VECTOR: {
-
     debug_vector(node);
     break;
   }
@@ -80,17 +78,22 @@ void debug(Node node) {
   }
 
   case NODE__INT: {
-
-    printf("this is int");
+                    debug_int(node);
     break;
   }
   case NODE__STRING: {
-     debug_string(node);
-       break;
- }
-  default: {
+    debug_string(node);
+    break;
+  }
+  case NODE__EOF: {
+    debug_eof(node);
+    break;
+  }
 
-      printf("unreachable");
-           }
+  case NODE__EMPTY: {
+                      break;
+                    }
+
+  default: { printf("unreachable"); }
   }
 }
