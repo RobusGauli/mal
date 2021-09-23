@@ -5,6 +5,7 @@
 #include <inttypes.h>
 
 #include "reader.h"
+#include "token.h"
 
 
 bool is_valid_integer(char* mem, size_t len) {
@@ -28,15 +29,13 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
     }
 
     if (input[index] == '(') {
-      Token token = {.tokentype=TOKEN__LEFT_PAREN};
-      cvector__add(tokens, token);
+      cvector__add(tokens, token__new(TOKEN__LEFT_PAREN));
       ++index;
       continue;
     }
 
     if (input[index] ==')') {
-      Token token = {.tokentype=TOKEN__RIGHT_PAREN};
-      cvector__add(tokens, token);
+      cvector__add(tokens,token__new(TOKEN__RIGHT_PAREN));
       ++index;
       continue;
     }
@@ -62,7 +61,7 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
         ++index;
       }
 
-      Token token = {.tokentype=TOKEN__COMMENT, .mem=mem, .len=(&(input[index-1]) - mem)+1};
+      Token token = token__new_with_val(TOKEN__COMMENT, stringview__new(mem, ((&(input[index-1]) - mem + 1))));
       cvector__add(tokens, token);
       continue;
     }
@@ -86,9 +85,11 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
         }
       }
 
-      Token token = {.tokentype=TOKEN__STRING, .mem=mem+1, .len=&(input[index-1]) - mem -1};
+      Token token = token__new_with_val(
+          TOKEN__STRING,
+          stringview__new(mem+1, &(input[index-1]) - mem - 1)
+          );
       cvector__add(tokens, token);
-
       continue;
     }
 
@@ -116,11 +117,9 @@ void cvector_tokens__tokenize(cvector_tokens_t* tokens, char* input) {
       ++len;
     }
     if (is_valid_integer(mem, len)) {
-      Token token = {.tokentype=TOKEN__NUMBER, .mem=mem, .len=len};
-      cvector__add(tokens, token);
+      cvector__add(tokens, token__new_with_val(TOKEN__INT, stringview__new(mem, len)));
     } else {
-      Token token = {.tokentype=TOKEN__SYMBOL, .mem=mem, .len=len};
-      cvector__add(tokens, token);
+      cvector__add(tokens, token__new_with_val(TOKEN__SYMBOL, stringview__new(mem, len)));
     }
 
     }
@@ -132,23 +131,38 @@ Node node_vector__new(cvector_nodes_t* cvector_nodes) {
 }
 
 Node node_symbol__new(char* mem, size_t len) {
-  Node node = {.nodetype=NODE__SYMBOL, .nodeval = {.nodesymbol = {.mem=mem, .len=len}}};
-  return node;
+  return (Node){
+    .nodetype = NODE__SYMBOL,
+      .nodeval = {
+        .nodesymbol = {
+          .stringview = {
+            .mem = mem,
+            .len = len
+          }
+        }
+      }
+  };
 }
 
 Node node_comment__new(char* mem, size_t len) {
-  Node node = {.nodetype =NODE__COMMENT, .nodeval = {.nodecomment = {.mem=mem, .len=len}}};
-  return node;
+  return (Node) {
+    .nodetype = NODE__COMMENT,
+      .nodeval = {
+        .nodecomment = {
+          .stringview = {
+            .mem = mem,
+            .len = len
+          }
+        }
+      }
+  };
 }
-
-// // len is 3
-// 344
-// ^
 
 Node node_int__new(char* mem, size_t len) {
   // convert that thint to actual int
   char* endptr = mem+len-1;
-  uintmax_t num = strtoumax(mem, &endptr, 10);
+  // converto to int
+  int num = strtoumax(mem, &endptr, 10);
   Node node = {.nodetype=NODE__INT, .nodeval={.nodeint={.val=num}}};
   return node;
 }
@@ -214,18 +228,18 @@ Node read_list(cvector_iterator_tokens_t* cvector_iterator_tokens) {
 Node read_atom(cvector_iterator_tokens_t* cvector_iterator_tokens) {
   Token token = cvector_iterator__next(cvector_iterator_tokens);
   if (token.tokentype == TOKEN__COMMENT) {
-    return node_comment__new(token.mem, token.len);
+    return node_comment__new(token.stringview.mem, token.stringview.len);
   }
 
   if (token.tokentype == TOKEN__STRING) {
-    return node_string__new(token.mem, token.len);
+    return node_string__new(token.stringview.mem, token.stringview.len);
   }
 
-  if (token.tokentype == TOKEN__NUMBER) {
-    return node_int__new(token.mem, token.len);
+  if (token.tokentype == TOKEN__INT) {
+    return node_int__new(token.stringview.mem, token.stringview.len);
   }
 
-  return node_symbol__new(token.mem, token.len);
+  return node_symbol__new(token.stringview.mem, token.stringview.len);
 }
 
 Node read_form(cvector_iterator_tokens_t* cvector_iterator_tokens) {
