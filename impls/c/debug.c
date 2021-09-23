@@ -4,8 +4,8 @@
 #include <string.h>
 
 void debug_symbol(Node node) {
-  size_t len = node.nodeval.nodesymbol.len;
-  char *mem = node.nodeval.nodesymbol.mem;
+  size_t len = node.nodeval.nodesymbol.stringview.len;
+  char *mem = node.nodeval.nodesymbol.stringview.mem;
   char buffer[len + 1];
   memcpy(buffer, mem, len);
   buffer[len] = 0;
@@ -36,8 +36,8 @@ void debug_vector(Node node) {
 }
 
 void debug_comment(Node node) {
-  size_t len = node.nodeval.nodecomment.len;
-  char *mem = node.nodeval.nodecomment.mem;
+  size_t len = node.nodeval.nodecomment.stringview.len;
+  char *mem = node.nodeval.nodecomment.stringview.mem;
   char buffer[len + 1];
   memcpy(buffer, mem, len);
   buffer[len] = 0;
