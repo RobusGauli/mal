@@ -5,19 +5,46 @@
 #include "reader.h"
 
 Node env__sum(Node a, Node b) {
-  return make_node_int(NODE__INT(a) + NODE__INT(b));
+  return (Node){
+    .nodetype=NODE__INT,
+      .nodeval={
+        .nodeint={
+          .val = (NODE__INT(a) + NODE__INT(b)) }}
+  };
 }
 
 Node env__minus(Node a, Node b) {
-  return make_node_int(NODE__INT(a) - NODE__INT(b));
+  return (Node) {
+    .nodetype = NODE__INT,
+      .nodeval = {
+        .nodeint = {
+          .val = (NODE__INT(a) + NODE__INT(b))
+        }
+      }
+    };
 }
 
 Node env__mul(Node a, Node b) {
-  return make_node_int(NODE__INT(a) * NODE__INT(b));
+   return (Node) {
+    .nodetype = NODE__INT,
+      .nodeval = {
+        .nodeint = {
+          .val = (NODE__INT(a) * NODE__INT(b))
+        }
+      }
+    };
 }
 
 Node env__div(Node a, Node b) {
-  return make_node_int(NODE__INT(a) / NODE__INT(b));
+   return (Node) {
+    .nodetype = NODE__INT,
+      .nodeval = {
+        .nodeint = {
+          .val = (NODE__INT(a) / NODE__INT(b))
+        }
+      }
+    };
+
 }
 
 void setup_environ(cdict_node_func_t *cdict_node_func) {

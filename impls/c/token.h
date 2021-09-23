@@ -2,6 +2,7 @@
 #define TOKEN_H
 
 #include "deps/cvector/cvector.h"
+#include "stringview.h"
 
 typedef enum {
   TOKEN__COMMENT,
@@ -25,24 +26,19 @@ typedef enum {
 } TokenType;
 
 typedef struct {
-  char* mem;
-  size_t len;
-} StringView;
-
-typedef struct {
   StringView stringview;
   TokenType tokentype;
 } Token;
-
 
 // constructor
 Token token__new(TokenType tokentype);
 Token token__new_with_val(TokenType tokentype, StringView stringview);
 
+// cvector tokens
 CVector(Token) cvector_tokens_t;
 CVector_iterator(cvector_tokens_t) cvector_iterator_tokens_t;
 
-// string view functions
-StringView stringview__new(char* mem, size_t len);
+// tokenization
+void cvector_tokens__tokenize(cvector_tokens_t *tokens, char *input);
 
-#endif
+#endif // TOKEN_H

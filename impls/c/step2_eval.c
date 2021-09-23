@@ -15,7 +15,7 @@
 
 #include "env.h"
 #include "eval.h"
-typedef void *func;
+
 
 char *PRINT(Node node) {
   debug(node);

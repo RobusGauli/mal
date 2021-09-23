@@ -4,25 +4,7 @@
 #include "reader.h"
 #include "token.h"
 
-#define NODE__INT(node) ((node).nodeval.nodeint.val)
-
-Node make_node_int(int val) {
-  return (Node){.nodetype = NODE__INT, .nodeval = {.nodeint = {.val = val}}};
-}
-
-Node make_node_symbol(char *mem, size_t len) {
-  return (Node){
-      .nodetype = NODE__SYMBOL,
-      .nodeval = {.nodesymbol = {.stringview = stringview__new(mem, len)}}};
-}
-
 Node READ(char *expr) { return read_str(expr); }
-
-Node node_symbol_value__new(void *pointer) {
-  Node node = {.nodetype = NODE__SYMBOL_VALUE,
-               .nodeval = {.nodesymbolvalue = {.funcpointer = pointer}}};
-  return node;
-}
 
 Node eval_node_symbol(Node node, cdict_node_func_t *cdict_node_func) {
   char *mem = node.nodeval.nodesymbol.stringview.mem;

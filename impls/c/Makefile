@@ -24,6 +24,8 @@ debug_source = debug.c
 token_source = token.c
 eval_source = eval.c
 env_source = env.c
+stringview_source = stringview.c
+node_source = node.c
 
 reader: $(reader_source)
 	$(CC) -o $@ -c $(CFLAGS) $(reader_source)
@@ -40,16 +42,21 @@ env: $(env_source)
 eval: $(eval_source)
 	$(CC) -o $@ -c $(CFLAGS) $(eval_source)
 
-$(s1): $(s1_source) reader debug token eval env
+node: $(node_source)
+	$(CC) -o $@ -c $(CFLAGS) $(node_source)
 
+stringview: $(stringview_source)
+	$(CC) -o $@ -c $(CFLAGS) $(stringview_source)
+
+$(s1): $(s1_source) reader debug token eval env
 	$(CC) -o $@ $(CFLAGS) reader debug token eval env $(s1_source) $(CLIBS)
 
-$(s2): $(s2_source) reader debug token eval env
-	$(CC)  -o $@ $(CFLAGS) token reader debug eval env $(s2_source) $(CLIBS)
+$(s2): $(s2_source) reader debug token eval env stringview node
+	$(CC) -o $@ $(CFLAGS) token reader debug eval env stringview node $(s2_source) $(CLIBS)
 
 
 .PHONY clean:
-	rm -rf reader debug step1_read_print eval env token
+	rm -rf reader debug step1_read_print eval env token node
 
 current: $(s2)
 	./$(s2)
