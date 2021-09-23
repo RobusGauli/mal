@@ -1,31 +1,19 @@
 #include <assert.h>
 
-#include "reader.h"
 #include "eval.h"
+#include "reader.h"
 #include "token.h"
 
 #define NODE__INT(node) ((node).nodeval.nodeint.val)
 
 Node make_node_int(int val) {
-  return (Node) {
-    .nodetype=NODE__INT,
-      .nodeval = {
-        .nodeint = {
-          .val=val
-        }
-      }
-  };
+  return (Node){.nodetype = NODE__INT, .nodeval = {.nodeint = {.val = val}}};
 }
 
-Node make_node_symbol(char* mem, size_t len) {
-  return (Node) {
-    .nodetype = NODE__SYMBOL,
-      .nodeval = {
-        .nodesymbol = {
-          .stringview = stringview__new(mem, len)
-        }
-      }
-  };
+Node make_node_symbol(char *mem, size_t len) {
+  return (Node){
+      .nodetype = NODE__SYMBOL,
+      .nodeval = {.nodesymbol = {.stringview = stringview__new(mem, len)}}};
 }
 
 Node READ(char *expr) { return read_str(expr); }
@@ -40,8 +28,8 @@ Node eval_node_symbol(Node node, cdict_node_func_t *cdict_node_func) {
   char *mem = node.nodeval.nodesymbol.stringview.mem;
   size_t len = node.nodeval.nodesymbol.stringview.len;
 
-  void* pointer = NULL;
-  char* a = node.nodeval.nodesymbol.stringview.mem;
+  void *pointer = NULL;
+  char *a = node.nodeval.nodesymbol.stringview.mem;
   size_t size = node.nodeval.nodesymbol.stringview.len;
   bool ok = cdict__get(cdict_node_func, node, &pointer);
   assert(ok);
@@ -64,13 +52,8 @@ Node eval_ast(Node node, cdict_node_func_t *cdict_node_func) {
     for (;;) {
       if (cvector_iterator__done(&iterator))
         break;
-      cvector__add(
-          new_cvector_nodes,
-          EVAL(
-            cvector_iterator__next(&iterator),
-            cdict_node_func
-            )
-          );
+      cvector__add(new_cvector_nodes,
+                   EVAL(cvector_iterator__next(&iterator), cdict_node_func));
     }
     return node_vector__new(new_cvector_nodes);
   }
@@ -95,8 +78,7 @@ Node EVAL(Node node, cdict_node_func_t *cdict_node_func) {
     return node;
   }
 
-  Node res =
-      eval_ast(node, cdict_node_func); // this should resolve the symbol
+  Node res = eval_ast(node, cdict_node_func); // this should resolve the symbol
   // take the first item of the evaluated list
   // this is result of the list
   cvector_nodes_t *_inner_nodes = res.nodeval.nodevector.mem;

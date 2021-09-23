@@ -56,9 +56,7 @@ void debug_string(Node node) {
 
 void debug_eof(Node node) { printf("EOF ,"); }
 
-void debug_int(Node node) {
-  printf("%d", node.nodeval.nodeint.val);
-}
+void debug_int(Node node) { printf("%d", node.nodeval.nodeint.val); }
 
 void debug(Node node) {
   switch (node.nodetype) {
@@ -78,7 +76,7 @@ void debug(Node node) {
   }
 
   case NODE__INT: {
-                    debug_int(node);
+    debug_int(node);
     break;
   }
   case NODE__STRING: {
@@ -91,8 +89,8 @@ void debug(Node node) {
   }
 
   case NODE__EMPTY: {
-                      break;
-                    }
+    break;
+  }
 
   default: { printf("unreachable"); }
   }

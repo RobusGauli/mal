@@ -1,8 +1,8 @@
 #include "deps/cdict.h/cdict.h"
 
 #include "env.h"
-#include "reader.h"
 #include "eval.h"
+#include "reader.h"
 
 Node env__sum(Node a, Node b) {
   return make_node_int(NODE__INT(a) + NODE__INT(b));
@@ -28,10 +28,13 @@ void setup_environ(cdict_node_func_t *cdict_node_func) {
 }
 
 bool node_comparator(Node *self, Node *other) {
-  return memcmp(self -> nodeval.nodesymbol.stringview.mem, other -> nodeval.nodesymbol.stringview.mem, self -> nodeval.nodesymbol.stringview.len) == 0;
- }
+  return memcmp(self->nodeval.nodesymbol.stringview.mem,
+                other->nodeval.nodesymbol.stringview.mem,
+                self->nodeval.nodesymbol.stringview.len) == 0;
+}
 
 cdict__u64 node_hasher(Node *self, cdict__u64 (*hash)(void *, size_t)) {
-  cdict__u64 value =  hash(self -> nodeval.nodesymbol.stringview.mem, self -> nodeval.nodesymbol.stringview.len);
+  cdict__u64 value = hash(self->nodeval.nodesymbol.stringview.mem,
+                          self->nodeval.nodesymbol.stringview.len);
   return value;
 }
