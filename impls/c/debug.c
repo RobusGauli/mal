@@ -62,6 +62,9 @@ void debug_error(Node node) {
 
 void debug(Node node) {
   switch (node.nodetype) {
+  case NODE__NIL:
+    printf("()");
+    break;
   case NODE__VECTOR: {
     debug_vector(node);
     break;
@@ -96,8 +99,8 @@ void debug(Node node) {
   }
 
  case NODE__ERR:
-                    debug_error(node);
-                    break;
+            debug_error(node);
+            break;
 
   default: { printf("unreachable"); }
   }

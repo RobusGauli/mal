@@ -10,6 +10,7 @@ typedef struct {
   cvector_iterator_tokens_t cvector_iterator_tokens_t;
 } Reader;
 
+Node READ(char *expr);
 Node read_str(char *expr);
 Node read_list(cvector_iterator_tokens_t *cvector_iterator);
 Node read_form(cvector_iterator_tokens_t *cvector_iterator);

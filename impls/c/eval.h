@@ -8,7 +8,6 @@
 #define NODE__INT(node) ((node).nodeval.nodeint.val)
 
 Node EVAL(Node node, cdict_node_func_t *cdict_node_func);
-Node READ(char *expr);
 Node env__div(Node a, Node b);
 Node env__minus(Node a, Node b);
 Node env__mul(Node a, Node b);

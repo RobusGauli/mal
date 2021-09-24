@@ -71,6 +71,12 @@ Node node_error__new(Str string) {
   };
 }
 
+Node node_nil__new() {
+  return (Node) {
+    .nodetype=NODE__NIL
+  };
+}
+
 Node node_string__new(char* mem, size_t len) {
   Str str = str__new();
   size_t index = 0;

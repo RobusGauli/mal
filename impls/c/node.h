@@ -6,6 +6,7 @@
 #include "str.h"
 
 typedef enum {
+  NODE__NIL,
   NODE__INT,
   NODE__STRING,
   NODE__COMMENT,
@@ -62,6 +63,7 @@ CVector(Node) cvector_nodes_t;
 CVector_iterator(cvector_nodes_t) cvector_iterator_nodes_t;
 
 Node node_vector__new(cvector_nodes_t *cvector_nodes);
+Node node_nil__new(void);
 Node node_symbol__new(char *mem, size_t len);
 Node node_comment__new(char *mem, size_t len);
 Node node_int__new(char*mem, size_t len);

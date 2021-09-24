@@ -10,7 +10,7 @@ typedef struct {
 } Str;
 
 Str str__new(void);
-void done(Str* str);
+void str__done(Str* str);
 void str__append(Str* str, char* buffer, size_t len);
 void str__nappend(Str* str, char* buffer);
 void str__cappend(Str* str, char ch);
