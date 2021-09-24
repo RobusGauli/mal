@@ -3,6 +3,7 @@
 
 #include "reader.h"
 #include "env.h"
+#include "node.h"
 
 #define NODE__INT(node) ((node).nodeval.nodeint.val)
 
@@ -17,4 +18,5 @@ Node eval_node_symbol(Node node, cdict_node_func_t *cdict_node_func);
 Node make_node_int(int val);
 Node make_node_symbol(char* mem, size_t len);
 Node node_symbol_value__new(void *pointer);
+
 #endif

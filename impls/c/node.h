@@ -3,6 +3,7 @@
 
 #include "deps/cvector/cvector.h"
 #include "stringview.h"
+#include "str.h"
 
 typedef enum {
   NODE__INT,
@@ -12,7 +13,8 @@ typedef enum {
   NODE__SYMBOL_VALUE,
   NODE__VECTOR,
   NODE__EMPTY,
-  NODE__EOF
+  NODE__EOF,
+  NODE__ERR,
 } NodeType;
 
 typedef struct {
@@ -31,11 +33,8 @@ typedef struct {
   StringView stringview;
 } NodeComment;
 
-CVector(char) cvector_chars_t;
-
 typedef struct {
-  cvector_chars_t cvector_chars;
-  size_t len;
+  Str str;
 } NodeString;
 
 typedef struct {
@@ -43,6 +42,10 @@ typedef struct {
 } NodeVector;
 
 typedef struct {
+  Str string;
+} NodeError;
+
+typedef struct Node {
   NodeType nodetype;
   union {
     NodeInt nodeint;
@@ -51,6 +54,7 @@ typedef struct {
     NodeVector nodevector;
     NodeString nodestring;
     NodeComment nodecomment;
+    NodeError nodeerror;
   } nodeval;
 } Node;
 
@@ -63,8 +67,7 @@ Node node_comment__new(char *mem, size_t len);
 Node node_int__new(char*mem, size_t len);
 Node node_eof__new(void);
 Node node_string__new(char* mem, size_t len);
-Node make_node_int(int val);
-Node node_symbol_value__new(void *pointer);
+Node node_error__new(Str string);
 Node node_vector__new(cvector_nodes_t* cvector_nodes);
 
 #endif

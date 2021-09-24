@@ -6,6 +6,7 @@
 
 #include "reader.h"
 #include "token.h"
+#include "node.h"
 
 
 Node read_list(cvector_iterator_tokens_t *cvector_iterator_tokens) {

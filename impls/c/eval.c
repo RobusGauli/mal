@@ -1,8 +1,10 @@
 #include <assert.h>
+#include <string.h>
 
 #include "eval.h"
 #include "reader.h"
 #include "token.h"
+#include "str.h"
 
 Node READ(char *expr) { return read_str(expr); }
 
@@ -11,10 +13,15 @@ Node eval_node_symbol(Node node, cdict_node_func_t *cdict_node_func) {
   size_t len = node.nodeval.nodesymbol.stringview.len;
 
   void *pointer = NULL;
-  char *a = node.nodeval.nodesymbol.stringview.mem;
-  size_t size = node.nodeval.nodesymbol.stringview.len;
+
   bool ok = cdict__get(cdict_node_func, node, &pointer);
-  assert(ok);
+  if (!ok) {
+    Str str = str__new();
+    str__nappend(&str, "Uncaught error: var ");
+    str__append(&str, mem, len);
+    str__nappend(&str, " not found");
+    return node_error__new(str);
+  }
   return node_symbol_value__new(pointer);
 }
 
@@ -34,8 +41,11 @@ Node eval_ast(Node node, cdict_node_func_t *cdict_node_func) {
     for (;;) {
       if (cvector_iterator__done(&iterator))
         break;
-      cvector__add(new_cvector_nodes,
-                   EVAL(cvector_iterator__next(&iterator), cdict_node_func));
+     Node node = EVAL(cvector_iterator__next(&iterator), cdict_node_func);
+     if (node.nodetype == NODE__ERR) {
+       return node;
+     }
+      cvector__add(new_cvector_nodes, node);
     }
     return node_vector__new(new_cvector_nodes);
   }
@@ -67,7 +77,7 @@ Node EVAL(Node node, cdict_node_func_t *cdict_node_func) {
   Node first_node = cvector__first(_inner_nodes);
   void *funcpointer = first_node.nodeval.nodesymbolvalue.funcpointer;
   Node (*func)(Node, Node) = funcpointer;
-  Node r =
+  Node result_node =
       func(cvector__index(_inner_nodes, 1), cvector__index(_inner_nodes, 2));
-  return r;
+  return result_node;
 }

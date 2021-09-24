@@ -15,6 +15,7 @@
 
 #include "env.h"
 #include "eval.h"
+#include "node.h"
 
 
 char *PRINT(Node node) {

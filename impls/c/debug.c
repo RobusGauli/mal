@@ -1,7 +1,10 @@
-#include "debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "str.h"
+#include "debug.h"
+
 
 void debug_symbol(Node node) {
   size_t len = node.nodeval.nodesymbol.stringview.len;
@@ -45,18 +48,17 @@ void debug_comment(Node node) {
 }
 
 void debug_string(Node node) {
-  size_t len = node.nodeval.nodestring.len;
-  cvector_chars_t cvector_chars = node.nodeval.nodestring.cvector_chars;
-  char *value = "";
-  if (cvector__size(&cvector_chars) > 0) {
-    value = cvector__wrapped_buffer(&cvector_chars);
-  }
-  printf("\"%s\"", value);
+  printf("\"%s\"", str__ascstr(&node.nodeval.nodestring.str));
 }
 
 void debug_eof(Node node) { printf("EOF ,"); }
 
 void debug_int(Node node) { printf("%d", node.nodeval.nodeint.val); }
+
+void debug_error(Node node) {
+  const char* msg = str__ascstr(&node.nodeval.nodeerror.string);
+  printf("%s\n", msg);
+}
 
 void debug(Node node) {
   switch (node.nodetype) {
@@ -81,6 +83,7 @@ void debug(Node node) {
   }
   case NODE__STRING: {
     debug_string(node);
+
     break;
   }
   case NODE__EOF: {
@@ -91,6 +94,10 @@ void debug(Node node) {
   case NODE__EMPTY: {
     break;
   }
+
+ case NODE__ERR:
+                    debug_error(node);
+                    break;
 
   default: { printf("unreachable"); }
   }

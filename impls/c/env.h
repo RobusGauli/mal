@@ -3,6 +3,7 @@
 
 #include "reader.h"
 #include "deps/cdict.h/cdict.h"
+#include "node.h"
 
 typedef void* func;
 

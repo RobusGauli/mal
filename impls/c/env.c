@@ -3,6 +3,7 @@
 #include "env.h"
 #include "eval.h"
 #include "reader.h"
+#include "node.h"
 
 Node env__sum(Node a, Node b) {
   return (Node){
@@ -18,7 +19,7 @@ Node env__minus(Node a, Node b) {
     .nodetype = NODE__INT,
       .nodeval = {
         .nodeint = {
-          .val = (NODE__INT(a) + NODE__INT(b))
+          .val = (NODE__INT(a) - NODE__INT(b))
         }
       }
     };

@@ -1,5 +1,7 @@
 #include <inttypes.h>
 #include "node.h"
+#include "eval.h"
+#include "str.h"
 
 Node node_vector__new(cvector_nodes_t* cvector_nodes) {
   Node node = {.nodetype=NODE__VECTOR, .nodeval = {.nodevector = {.mem=cvector_nodes}}};
@@ -58,10 +60,19 @@ Node node_eof__new(void) {
   return node;
 }
 
-Node node_string__new(char* mem, size_t len) {
-  cvector_chars_t cvector_chars;
-  cvector__init(&cvector_chars);
+Node node_error__new(Str string) {
+  return (Node) {
+    .nodetype=NODE__ERR,
+      .nodeval = {
+        .nodeerror = {
+          .string=string
+        }
+      }
+  };
+}
 
+Node node_string__new(char* mem, size_t len) {
+  Str str = str__new();
   size_t index = 0;
   while(index < len) {
     char ch = mem[index++];
@@ -70,14 +81,18 @@ Node node_string__new(char* mem, size_t len) {
         continue;
       }
       ch = mem[index];
-      cvector__add(&cvector_chars, ch);
+      str__cappend(&str, ch);
       ++index;
       continue;
     }
-    cvector__add(&cvector_chars, ch);
+    str__cappend(&str, ch);
   }
-  Node node = {.nodetype=NODE__STRING,
-    .nodeval={.nodestring = {.cvector_chars=cvector_chars}}};
-
-  return node;
+  return (Node){
+    .nodetype = NODE__STRING,
+      .nodeval = {
+        .nodestring = {
+          .str = str
+        }
+      }
+  };
 }
