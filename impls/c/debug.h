@@ -3,7 +3,8 @@
 
 #include "reader.h"
 #include "node.h"
+#include "str.h"
 
-void debug(Node node);
+Str debug(Node node);
 
 #endif

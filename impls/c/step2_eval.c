@@ -16,31 +16,28 @@
 #include "env.h"
 #include "eval.h"
 #include "node.h"
+#include "str.h"
 
 
-char *PRINT(Node node) {
-  debug(node);
-  return "";
+Str PRINT(Node node) {
+  return debug(node);
 }
 
 int main(void) {
-
   for (;;) {
     char *input = readline("user> ");
     if (input == NULL) { // EOF
       exit(0);
     }
-    // create environment
-    cdict_node_func_t cdict_node_func;
-    cdict__init(&cdict_node_func);
-    cdict__set_comparator(&cdict_node_func, node_comparator);
-    cdict__set_hash(&cdict_node_func, node_hasher);
-    // setup environment
+    cdict_node_func_t cdict_node_func = env__new();
     setup_environ(&cdict_node_func);
-    // repl
+
     Node node = READ(input);
     Node evaluated_node = EVAL(node, &cdict_node_func);
-    char *result = PRINT(evaluated_node);
-    printf("%s\n", result);
+    Str result = PRINT(evaluated_node);
+    if (str__isempty(&result)) {
+      continue;
+    }
+    printf("%s\n", str__ascstr(&result));
   }
 }

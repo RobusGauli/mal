@@ -9,6 +9,10 @@ typedef void* func;
 
 CDict(Node, func) cdict_node_func_t;
 
+// constructor
+cdict_node_func_t env__new();
+
+// throw away later
 void setup_environ(cdict_node_func_t *cdict_node_func);
 
 Node env__sum(Node a, Node b);

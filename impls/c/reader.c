@@ -82,16 +82,6 @@ Node read_str(char *input) {
   cvector_iterator_tokens_t cvector_iterator_tokens;
   cvector_iterator__init(&cvector_iterator_tokens, &tokens);
 
-  cvector_iterator_tokens_t iterator;
-  cvector_iterator__init(&iterator, &tokens);
-
-  for(;;) {
-    if (cvector_iterator__done(&iterator)) break;
-    Token token = cvector_iterator__next(&iterator);
-    /*printf("token: %d\n", token.tokentype);*/
-  }
-
-
   Node node = read_form(&cvector_iterator_tokens);
   return node;
 }

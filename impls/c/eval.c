@@ -5,6 +5,7 @@
 #include "reader.h"
 #include "token.h"
 #include "str.h"
+#include "debug.h"
 
 
 Node eval_node_symbol(Node node, cdict_node_func_t *cdict_node_func) {
@@ -122,7 +123,6 @@ Node eval_vector(Node node, cdict_node_func_t* cdict_node_func) {
     return node_nil__new();
   }
 
-  // if there is some size // grab the first element
   Node first = cvector__first(cvector_nodes);
   Node second = cvector__index(cvector_nodes, 1);
   Node third = cvector__index(cvector_nodes, 2);
@@ -131,7 +131,11 @@ Node eval_vector(Node node, cdict_node_func_t* cdict_node_func) {
   if (first.nodetype != NODE__SYMBOL) {
     // it must be symbol
     Str str = str__new();
-    str__nappend(&str, "is not a symbol; try using a symbol instead");
+    Str what = debug(first);
+    str__cappend(&str, '\'');
+    str__add(&str, &what);
+    str__cappend(&str, '\'');
+    str__nappend(&str, " is not a symbol; try using a symbol instead");
     str__done(&str);
     return node_error__new(str);
   }

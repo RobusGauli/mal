@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS =  -std=c11 -g
 
-CLIBS = -lreadline
+CLIBS = -lreadline -lm
 
 s0 = step0_repl
 s0_source = $(s0).c

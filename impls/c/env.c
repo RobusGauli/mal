@@ -5,6 +5,28 @@
 #include "reader.h"
 #include "node.h"
 
+
+bool node_comparator(Node *self, Node *other) {
+  return memcmp(self->nodeval.nodesymbol.stringview.mem,
+                other->nodeval.nodesymbol.stringview.mem,
+                self->nodeval.nodesymbol.stringview.len) == 0;
+}
+
+cdict__u64 node_hasher(Node *self, cdict__u64 (*hash)(void *, size_t)) {
+  cdict__u64 value = hash(self->nodeval.nodesymbol.stringview.mem,
+                          self->nodeval.nodesymbol.stringview.len);
+  return value;
+}
+
+cdict_node_func_t env__new(void) {
+  cdict_node_func_t cdict_node_func;
+  cdict__init(&cdict_node_func);
+  cdict__set_comparator(&cdict_node_func, node_comparator);
+  cdict__set_hash(&cdict_node_func, node_hasher);
+
+  return cdict_node_func;
+}
+
 Node env__sum(Node a, Node b) {
   return (Node){
     .nodetype=NODE__INT,
@@ -53,16 +75,4 @@ void setup_environ(cdict_node_func_t *cdict_node_func) {
   cdict__add(cdict_node_func, node_symbol__new("-", 1), env__minus);
   cdict__add(cdict_node_func, node_symbol__new("*", 1), env__mul);
   cdict__add(cdict_node_func, node_symbol__new("/", 1), env__div);
-}
-
-bool node_comparator(Node *self, Node *other) {
-  return memcmp(self->nodeval.nodesymbol.stringview.mem,
-                other->nodeval.nodesymbol.stringview.mem,
-                self->nodeval.nodesymbol.stringview.len) == 0;
-}
-
-cdict__u64 node_hasher(Node *self, cdict__u64 (*hash)(void *, size_t)) {
-  cdict__u64 value = hash(self->nodeval.nodesymbol.stringview.mem,
-                          self->nodeval.nodesymbol.stringview.len);
-  return value;
 }
