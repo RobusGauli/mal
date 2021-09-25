@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "token.h"
+#include <stdio.h>
 
 Token token__new(TokenType tokentype) {
   return (Token){.tokentype = tokentype};
@@ -127,5 +127,45 @@ void cvector_tokens__tokenize(cvector_tokens_t *tokens, char *input) {
       cvector__add(tokens, token__new_with_val(TOKEN__SYMBOL,
                                                stringview__new(mem, len)));
     }
+  }
+}
+char *tokentype__name(TokenType tokentype) {
+  switch (tokentype) {
+  case TOKEN__COMMENT:
+    return "TOKEN__COMMENT";
+  case TOKEN__SYMBOL:
+    return "TOKEN__SYMBOL";
+  case TOKEN__INT:
+    return "TOKEN__INT";
+  case TOKEN__STRING:
+    return "TOKEN__STRING";
+  case TOKEN__SEMICOLON:
+    return "TOKEN__SEMICOLON";
+  case TOKEN__OTHER:
+    return "TOKEN__OTHER";
+  case TOKEN__TILDA_AT:
+    return "TOKEN__TILDA_AT";
+  case TOKEN__AT:
+    return "TOKEN__AT";
+  case TOKEN__LEFT_SQ_BR:
+    return "TOKEN__LEFT_SQ_BR";
+  case TOKEN__RIGHT_SQ_BR:
+    return "TOKEN__RIGHT_SQ_BR";
+  case TOKEN__LEFT_CURLY_BR:
+    return "TOKEN__LEFT_CURLY_BR";
+  case TOKEN__RIGHT_CURLY_BR:
+    return "TOKEN__RIGHT_CURLY_BR";
+  case TOKEN__LEFT_PAREN:
+    return "TOKEN__LEFT_PAREN";
+  case TOKEN__RIGHT_PAREN:
+    return "TOKEN__RIGHT_PAREN";
+  case TOKEN__APOSTROPHE:
+    return "TOKEN__APOSTROPHE";
+  case TOKEN__WEIRD:
+    return "TOKEN__WEIRD";
+  case TOKEN__TILDA:
+    return "TOKEN__TILDA";
+  case TOKEN__CARRAT:
+    return "TOKEN__CARRAT";
   }
 }

@@ -5,15 +5,21 @@
 #include "deps/cdict.h/cdict.h"
 #include "node.h"
 
-typedef void* func;
+CDict(Node, Node) cdict_node_t;
 
-CDict(Node, func) cdict_node_func_t;
+typedef struct Env {
+  cdict_node_t current;
+  struct Env* outer;
+} Env;
 
 // constructor
-cdict_node_func_t env__new();
+Env env__new();
+void env__setup_initial(Env* env);
 
-// throw away later
-void setup_environ(cdict_node_func_t *cdict_node_func);
+// setter and getters
+void env__set(Env* env, Node k, Node v);
+Env* env__find(Env* env, Node key);
+Node env__get(Env* env, Node key);
 
 Node env__sum(Node a, Node b);
 Node env__minus(Node a , Node b);

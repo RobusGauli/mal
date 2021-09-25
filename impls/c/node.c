@@ -8,17 +8,12 @@ Node node_vector__new(cvector_nodes_t* cvector_nodes) {
   return node;
 }
 
-#define NODE__INT(node) ((node).nodeval.nodeint.val)
-
-
-Node node_symbol_value__new(void *pointer) {
-  Node node = {.nodetype = NODE__SYMBOL_VALUE,
-               .nodeval = {.nodesymbolvalue = {.funcpointer = pointer}}};
+Node node_symbol_value__new(Node node) {
   return node;
 }
 
 
-Node node_symbol__new(char* mem, size_t len) {
+Node node_symbol__new(char* mem, size_t len, NodeSymbolType nodesymboltype) {
   return (Node){
     .nodetype = NODE__SYMBOL,
       .nodeval = {
@@ -26,7 +21,8 @@ Node node_symbol__new(char* mem, size_t len) {
           .stringview = {
             .mem = mem,
             .len = len
-          }
+          },
+          .nodesymboltype=nodesymboltype
         }
       }
   };

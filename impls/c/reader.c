@@ -4,9 +4,9 @@
 
 #include <inttypes.h>
 
+#include "node.h"
 #include "reader.h"
 #include "token.h"
-#include "node.h"
 
 Node READ(char *expr) { return read_str(expr); }
 
@@ -40,21 +40,48 @@ Node read_list(cvector_iterator_tokens_t *cvector_iterator_tokens) {
   return node;
 }
 
+bool token__is_def(const Token *token) {
+  if (token->stringview.len != 4) {
+    return false;
+  }
+
+  return strncmp(token->stringview.mem, "def!", 4) == 0;
+}
+
+bool token__is_let(const Token *token) {
+  if (token->stringview.len != 4) {
+    return false;
+  }
+
+  return strncmp(token->stringview.mem, "let*", 4) == 0;
+}
+
 Node read_atom(cvector_iterator_tokens_t *cvector_iterator_tokens) {
+
   Token token = cvector_iterator__next(cvector_iterator_tokens);
-  if (token.tokentype == TOKEN__COMMENT) {
+  switch (token.tokentype) {
+  case TOKEN__COMMENT:
     return node_comment__new(token.stringview.mem, token.stringview.len);
-  }
-
-  if (token.tokentype == TOKEN__STRING) {
+  case TOKEN__STRING:
     return node_string__new(token.stringview.mem, token.stringview.len);
-  }
-
-  if (token.tokentype == TOKEN__INT) {
+  case TOKEN__INT:
     return node_int__new(token.stringview.mem, token.stringview.len);
-  }
+  case TOKEN__SYMBOL:
+    if (token__is_def(&token)) {
+      return node_symbol__new(token.stringview.mem, token.stringview.len,
+                              NODESYMBOL__SPECIAL_DEF_FORM);
+    }
+    if (token__is_let(&token)) {
+      return node_symbol__new(token.stringview.mem, token.stringview.len,
+                              NODESYMBOL__SPECIAL_LET_FORM);
+    }
 
-  return node_symbol__new(token.stringview.mem, token.stringview.len);
+    return node_symbol__new(token.stringview.mem, token.stringview.len,
+                            NODESYMBOL__NORM_FORM);
+
+  default:
+    assert(0 && printf("unreachable"));
+  }
 }
 
 Node read_form(cvector_iterator_tokens_t *cvector_iterator_tokens) {
@@ -67,7 +94,6 @@ Node read_form(cvector_iterator_tokens_t *cvector_iterator_tokens) {
     if (token.tokentype == TOKEN__LEFT_PAREN) {
       return read_list(cvector_iterator_tokens);
     }
-
     return read_atom(cvector_iterator_tokens);
   }
 

@@ -18,22 +18,21 @@
 #include "node.h"
 #include "str.h"
 
-
-Str PRINT(Node node) {
-  return debug(node);
-}
+Str PRINT(Node node) { return debug(node); }
 
 int main(void) {
+
+  Env env = env__new();
+  env__setup_initial(&env);
+
   for (;;) {
     char *input = readline("user> ");
     if (input == NULL) { // EOF
       exit(0);
     }
-    cdict_node_func_t cdict_node_func = env__new();
-    setup_environ(&cdict_node_func);
 
     Node node = READ(input);
-    Node evaluated_node = EVAL(node, &cdict_node_func);
+    Node evaluated_node = EVAL(node, env);
     Str result = PRINT(evaluated_node);
     if (str__isempty(&result)) {
       continue;

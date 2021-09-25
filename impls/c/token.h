@@ -41,4 +41,7 @@ CVector_iterator(cvector_tokens_t) cvector_iterator_tokens_t;
 // tokenization
 void cvector_tokens__tokenize(cvector_tokens_t *tokens, char *input);
 
+// debugging
+char *tokentype__name(TokenType tokentype);
+
 #endif // TOKEN_H

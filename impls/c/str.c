@@ -11,18 +11,35 @@ Str str__new(void) {
   };
 }
 
+Str str__dclone(const Str* const other) {
+
+  Str str = str__new();
+
+  str__append(
+      &str,
+      cvector__wrapped_buffer(&(other -> cvector_chars)),
+      cvector__size(&(other -> cvector_chars)
+  ));
+
+  return str;
+}
+
+void str__free(Str* str) {
+  cvector__free(&(str -> cvector_chars));
+}
+
 const char* str__ascstr(Str* str) {
   return cvector__wrapped_buffer(&(str -> cvector_chars));
 }
 
 
-void str__append(Str* str, char* buffer, size_t len) {
+void str__append(Str* const str, const char* const buffer, size_t len) {
   for (size_t i = 0; i < len; i++) {
     cvector__add(&(str -> cvector_chars), buffer[i]);
   }
 }
 
-void str__nappend(Str* str, char* buffer) {
+void str__nappend(Str* const str, const char* const buffer) {
   for (size_t i = 0 ; i < strlen(buffer); ++i) {
     cvector__add(&(str -> cvector_chars), buffer[i]);
   }
@@ -37,7 +54,7 @@ void str__done(Str* str) {
 }
 
 
-void str__add(Str* self, Str* other) {
+void str__add(Str* self, const Str* const other) {
   if(str__isempty(other)) {
     return;
   }
@@ -48,7 +65,7 @@ void str__add(Str* self, Str* other) {
       );
 }
 
-bool str__isnullterminated(Str* str) {
+bool str__isnullterminated(const Str* const str) {
 
   if (!cvector__size(&(str -> cvector_chars)))  {
     return false;
@@ -62,12 +79,12 @@ bool str__isnullterminated(Str* str) {
 }
 
 
-bool str__isempty(Str* str) {
+bool str__isempty(const Str* const str) {
   assert(str__isnullterminated(str));
   return str__size(str) == 0;
 }
 
-size_t str__size(Str* str) {
+size_t str__size(const Str* const str) {
   return cvector__size(&(str -> cvector_chars)) - 1;
 }
 
