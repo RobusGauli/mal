@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <math.h>
+
 
 #include "str.h"
 
@@ -43,6 +45,25 @@ void str__nappend(Str* const str, const char* const buffer) {
   for (size_t i = 0 ; i < strlen(buffer); ++i) {
     cvector__add(&(str -> cvector_chars), buffer[i]);
   }
+}
+
+int ndigits(int arg) {
+  int count = 1;
+  while (arg > (int)pow(10, count))  {
+    count++;
+  }
+  return count;
+}
+
+void str__intappend(Str* const str, int arg) {
+  int n = ndigits(arg);
+
+  for (int i = n-1; i >= 0; i--) {
+    int num = (arg / (pow(10, i)));
+    str__cappend(str, '0' + num);
+    arg = (arg - num * pow(10, i));
+  }
+
 }
 
 void str__cappend(Str* str, char ch) {

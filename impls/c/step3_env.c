@@ -17,6 +17,7 @@
 #include "eval.h"
 #include "node.h"
 #include "str.h"
+#include <math.h>
 
 Str PRINT(Node node) { return debug(node); }
 
@@ -32,7 +33,7 @@ int main(void) {
     }
 
     Node node = READ(input);
-    Node evaluated_node = EVAL(node, env);
+    Node evaluated_node = EVAL(node, &env);
     Str result = PRINT(evaluated_node);
     if (str__isempty(&result)) {
       continue;

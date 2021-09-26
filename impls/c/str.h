@@ -25,6 +25,7 @@ void str__done(Str* const str);
 size_t str__size(const Str* const str);
 void str__free(Str* str);
 void str__append(Str* const str, const char* const buffer, size_t len);
+void str__intappend(Str* const str, int arg);
 void str__nappend(Str* const str, const char* const buffer);
 void str__cappend(Str* const str, char ch);
 bool str__isnullterminated(const Str* const str);

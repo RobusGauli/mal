@@ -19,6 +19,9 @@ $(s0): $(s0_source)
 s2 = step2_eval
 s2_source = $(s2).c
 
+s3 = step3_env
+s3_source = $(s3).c
+
 reader_source = reader.c
 debug_source = debug.c
 token_source = token.c
@@ -58,8 +61,11 @@ $(s1): $(s1_source) reader debug token eval env str
 $(s2): $(s2_source) reader debug token eval env stringview node str
 	$(CC) -o $@ $(CFLAGS) str token reader debug eval env stringview node  $(s2_source) $(CLIBS)
 
+$(s3): $(s3_source) reader debug token eval env stringview node str
+	$(CC) -o $@ $(CFLAGS) str token reader debug eval env stringview node  $(s3_source) $(CLIBS)
+
 .PHONY clean:
 	rm -rf reader debug step1_read_print eval env token node str
 
-current: $(s2)
-	./$(s2)
+current: $(s3)
+	./$(s3)

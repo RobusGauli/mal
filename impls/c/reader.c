@@ -40,21 +40,6 @@ Node read_list(cvector_iterator_tokens_t *cvector_iterator_tokens) {
   return node;
 }
 
-bool token__is_def(const Token *token) {
-  if (token->stringview.len != 4) {
-    return false;
-  }
-
-  return strncmp(token->stringview.mem, "def!", 4) == 0;
-}
-
-bool token__is_let(const Token *token) {
-  if (token->stringview.len != 4) {
-    return false;
-  }
-
-  return strncmp(token->stringview.mem, "let*", 4) == 0;
-}
 
 Node read_atom(cvector_iterator_tokens_t *cvector_iterator_tokens) {
 

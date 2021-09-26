@@ -74,7 +74,6 @@ Env *env__find(Env *env, Node key) {
   }
   Node val;
   bool ok = cdict__get(&(env->current), (key), (&val));
-  printf("ok: %d\n", ok);
   if (ok) {
     return env;
   } else {

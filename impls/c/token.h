@@ -44,4 +44,8 @@ void cvector_tokens__tokenize(cvector_tokens_t *tokens, char *input);
 // debugging
 char *tokentype__name(TokenType tokentype);
 
+// token helpers
+bool token__is_def(const Token *token);
+bool token__is_let(const Token *token);
+
 #endif // TOKEN_H

@@ -26,10 +26,10 @@ Node eval_node_symbol(Node node, Env env) {
   return node_symbol_value__new(n);
 }
 
-Node resolve_symbol(Node node, Env env) {
+Node resolve_symbol(Node node, Env* env) {
 
   Str v = debug(node);
-  Env *found_env = env__find(&env, node);
+  Env *found_env = env__find(env, node);
   if (found_env == NULL) {
     Str str = str__new();
     str__nappend(&str, "Uncaught error: var ");
@@ -47,7 +47,7 @@ Node resolve_symbol(Node node, Env env) {
   return found_node;
 }
 
-Node eval_vector(Node node, Env env) {
+Node eval_vector(Node node, Env* env) {
   cvector_nodes_t *cvector_nodes = NODE__VECTOR_MEM_(node);
   if (!cvector__size(cvector_nodes)) {
     return node_nil__new();
@@ -59,6 +59,58 @@ Node eval_vector(Node node, Env env) {
   // user> (+ (let* name 333 h (+ name 30)) 5) // answer is 338
   case NODE__SYMBOL: {
     NodeSymbolType symbol_type = NODE__SYMBOL_TYPE_(first);
+
+    if (symbol_type == NODESYMBOL__SPECIAL_LET_FORM) {
+      if (cvector__size(cvector_nodes) != 3) {
+        Str str = str__new();
+
+        str__nappend(&str, "ValueError: takes 2 positional arguments but ");
+        str__intappend(&str, cvector__size(cvector_nodes) - 1);
+        str__nappend(&str, " were given");
+        str__done(&str);
+        return node_error__new(str);
+      }
+
+      Node second = cvector__index(cvector_nodes, 1);
+      if (NODE__TYPE_(second) != NODE__VECTOR) {
+        Str str = str__new();
+        str__nappend(&str, "ValueError: expected first argument to be grouped "
+                           "s-expression for let* binding");
+        str__done(&str);
+        return node_error__new(str);
+      }
+
+      Env new_env = env__new();
+      new_env.outer = env;
+
+      cvector_nodes_t *cvector_nodes_second = second.nodeval.nodevector.mem;
+      cvector_iterator_nodes_t iterator;
+      cvector_iterator__init(&iterator, cvector_nodes_second);
+
+      for (;;) {
+        if (cvector_iterator__done(&iterator))
+          break;
+        Node key = cvector_iterator__next(&iterator);
+
+        // error out if we don't have complete key/val pair
+        if (cvector_iterator__done(&iterator)) {
+          Str str = str__new();
+          str__nappend(&str, "ValueError: value pair expected for key '");
+          Str debug_key = debug(key);
+          str__add(&str, &debug_key);
+          str__free(&debug_key);
+          str__nappend(&str, "' in let* binding(s)");
+          str__done(&str);
+          return node_error__new(str);
+        }
+
+        Node val = cvector_iterator__next(&iterator);
+        env__set(&new_env, key, EVAL(val, &new_env));
+      }
+
+      Node third = cvector__index(cvector_nodes, 2);
+      return EVAL(third, &new_env);
+    }
 
     if (symbol_type == NODESYMBOL__SPECIAL_DEF_FORM) {
       Node second_elem = cvector__index(cvector_nodes, 1);
@@ -78,7 +130,10 @@ Node eval_vector(Node node, Env env) {
       Node third_elem = cvector__index(cvector_nodes, 2);
       // if that is not the case, set this as a key
       Node evaluated_third_elem = EVAL(third_elem, env);
-      env__set(&env, second_elem, evaluated_third_elem);
+      if (NODE__IS_ERR_(evaluated_third_elem)) {
+        return evaluated_third_elem;
+      }
+      env__set(env, second_elem, evaluated_third_elem);
       return evaluated_third_elem;
     }
 
@@ -91,7 +146,7 @@ Node eval_vector(Node node, Env env) {
 
       if (cvector__size(cvector_nodes) != 3) {
         Str str = str__new();
-        str__nappend(&str, "cannot be more than 2 arguments");
+        str__nappend(&str, "ValueError: argument's length must be 2");
         str__done(&str);
         return node_error__new(str);
       }
@@ -118,7 +173,7 @@ Node eval_vector(Node node, Env env) {
   }
 }
 
-Node EVAL(Node node, Env env) {
+Node EVAL(Node node, Env *env) {
   switch (node.nodetype) {
   case NODE__NIL:
     return node;
@@ -129,7 +184,6 @@ Node EVAL(Node node, Env env) {
   case NODE__COMMENT:
     return node;
   case NODE__SYMBOL:
-    // yup resolve this shit
     return resolve_symbol(node, env);
   case NODE__SYMBOL_VALUE:
     return node;
