@@ -123,13 +123,29 @@ void cvector_tokens__tokenize(cvector_tokens_t *tokens, char *input) {
     if (is_int(mem, len)) {
       cvector__add(tokens,
                    token__new_with_val(TOKEN__INT, stringview__new(mem, len)));
-    } else {
-      cvector__add(tokens, token__new_with_val(TOKEN__SYMBOL,
-                                               stringview__new(mem, len)));
+
+      continue;
     }
+    if (token__is_nil(mem, len)) {
+      cvector__add(tokens, token__new(TOKEN__NIL));
+      continue;
+
+    }
+
+    if (token__is_true(mem, len)) {
+      cvector__add(tokens, token__new(TOKEN__TRUE));
+      continue;
+    }
+
+    if (token__is_false(mem, len)) {
+      cvector__add(tokens, token__new(TOKEN__FALSE));
+      continue;
+    }
+
+    cvector__add(tokens, token__new_with_val(TOKEN__SYMBOL,
+                                               stringview__new(mem, len)));
   }
 }
-
 
 char *tokentype__name(TokenType tokentype) {
   switch (tokentype) {
@@ -169,6 +185,12 @@ char *tokentype__name(TokenType tokentype) {
     return "TOKEN__TILDA";
   case TOKEN__CARRAT:
     return "TOKEN__CARRAT";
+  case TOKEN__NIL:
+    return "TOKEN__NIL";
+  case TOKEN__TRUE:
+    return "TOKEN__TRUE";
+  case TOKEN__FALSE:
+    return "TOKEN__FALSE";
   }
 }
 
@@ -187,4 +209,24 @@ bool token__is_let(const Token *token) {
   }
 
   return strncmp(token->stringview.mem, "let*", 4) == 0;
+}
+
+bool token__is_nil(const char* const mem, size_t len) {
+  if (len != 3) {
+    return false;
+  }
+  return strncmp(mem, "nil", 3) == 0;
+}
+
+bool token__is_true(const char* const mem, size_t len) {
+  if (len != 4) {
+    return false;
+  }
+
+  return strncmp(mem, "true", 4) == 0;
+}
+
+bool token__is_false(const char* const mem, size_t len) {
+  if (len != 5) return false;
+  return strncmp(mem, "false", 5) == 0;
 }

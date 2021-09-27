@@ -2,12 +2,15 @@
 #define NODE_H
 
 #include "deps/cvector/cvector.h"
+#include "deps/cdict.h/cdict.h"
 #include "stringview.h"
 #include "str.h"
 
 typedef enum {
   NODE__NIL,
   NODE__INT,
+  NODE__TRUE,
+  NODE__FALSE,
   NODE__STRING,
   NODE__COMMENT,
   NODE__SYMBOL,
@@ -16,12 +19,14 @@ typedef enum {
   NODE__EMPTY,
   NODE__EOF,
   NODE__ERR,
+  NODE__LIST,
 } NodeType;
 
 typedef struct {
   int val;
 } NodeInt;
 
+// constructor
 #define NODE__INT_(node) ((node).nodeval.nodeint)
 #define NODE__INT_VAL_(node) (NODE__INT_(node).val)
 
@@ -79,6 +84,13 @@ typedef struct {
 #define NODE__ERROR_(node) ((node).nodeval.nodeerror)
 #define NODE__ERROR_STRING_(node) ((NODE__ERROR_(node)).string)
 
+typedef struct {
+  void* mem;
+} NodeList;
+
+#define NODE__LIST_(node) ((node).nodeval.nodelist)
+#define NODE__LIST_MEM_(node) ((NODE__LIST_(node)).mem)
+
 typedef struct Node {
   NodeType nodetype;
   union {
@@ -89,6 +101,7 @@ typedef struct Node {
     NodeString nodestring;
     NodeComment nodecomment;
     NodeError nodeerror;
+    NodeList nodelist;
   } nodeval;
 } Node;
 
@@ -103,11 +116,24 @@ Node node_symbol__new(char *mem, size_t len, NodeSymbolType nodesymboltype);
 
 Node node_comment__new(char *mem, size_t len);
 Node node_int__new(char*mem, size_t len);
+Node node_true__new(void);
+Node node_false__new(void);
 Node node_eof__new(void);
 Node node_string__new(char* mem, size_t len);
 Node node_error__new(Str string);
 Node node_vector__new(cvector_nodes_t* cvector_nodes);
+Node node_list__new(cvector_nodes_t* cvector_nodes);
 
+// might want to delete these
+Node node__empty_list(void);
+
+CDict(Node, Node) cdict_node_t;
+CDict_iterator(cdict_node_t) cdict_iterator_node_t;
+
+bool node_comparator(Node *self, Node *other);
+
+cdict__u64 node_hasher(Node *self, cdict__u64 (*hash)(void *, size_t));
+//
 // helper macro
 #define NODE__IS_ERR_(node) ((node).nodetype == NODE__ERR)
 #define NODE_SYMBOL__NEW_(_mem, _len)                                          \
@@ -119,4 +145,6 @@ Node node_vector__new(cvector_nodes_t* cvector_nodes);
   })
 
 
+// from natives
+Node nodeint__new(int val);
 #endif

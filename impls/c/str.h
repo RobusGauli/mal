@@ -24,6 +24,7 @@ Str str__dclone(const Str* const other); // deep clone
 void str__done(Str* const str);
 size_t str__size(const Str* const str);
 void str__free(Str* str);
+bool str__eq(const Str* const self, const Str* const other);
 void str__append(Str* const str, const char* const buffer, size_t len);
 void str__intappend(Str* const str, int arg);
 void str__nappend(Str* const str, const char* const buffer);

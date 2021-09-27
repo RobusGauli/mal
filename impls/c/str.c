@@ -105,6 +105,20 @@ bool str__isempty(const Str* const str) {
   return str__size(str) == 0;
 }
 
+bool str__eq(const Str* const self, const Str* const other) {
+  size_t s_size = cvector__size(&(self -> cvector_chars));
+  size_t o_size = cvector__size(&(other -> cvector_chars));
+
+  if (s_size != o_size) {
+    return false;
+  }
+
+  void* s_mem = cvector__wrapped_buffer(&(self -> cvector_chars));
+  void* o_mem = cvector__wrapped_buffer(&(other -> cvector_chars));
+  return memcmp(s_mem, o_mem, s_size) == 0;
+
+}
+
 size_t str__size(const Str* const str) {
   return cvector__size(&(str -> cvector_chars)) - 1;
 }

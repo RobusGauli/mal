@@ -73,9 +73,24 @@ Node node_nil__new() {
   };
 }
 
+Node node_true__new() {
+  return (Node) {
+    .nodetype=NODE__TRUE
+  };
+}
+
+
+Node node_false__new() {
+  return (Node) {
+    .nodetype=NODE__FALSE
+  };
+}
+
 Node node_string__new(char* mem, size_t len) {
+
   Str str = str__new();
   size_t index = 0;
+
   while(index < len) {
     char ch = mem[index++];
     if (ch == '\\') {
@@ -89,11 +104,52 @@ Node node_string__new(char* mem, size_t len) {
     }
     str__cappend(&str, ch);
   }
+
+  str__done(&str);
+
   return (Node){
     .nodetype = NODE__STRING,
       .nodeval = {
         .nodestring = {
           .str = str
+        }
+      }
+  };
+}
+
+Node node__empty_list() {
+
+  cvector_nodes_t* nodes = malloc(sizeof(cvector_nodes_t));
+  cvector__init(nodes);
+
+  return (Node){
+    .nodetype=NODE__LIST,
+      .nodeval = {
+        .nodelist = {
+          .mem = nodes
+        }
+      }
+  };
+}
+
+bool node_comparator(Node *self, Node *other) {
+  return memcmp(NODE__SYMBOL_STRINGVIEW_MEM_(*self),
+                NODE__SYMBOL_STRINGVIEW_MEM_(*other),
+                NODE__SYMBOL_STRINGVIEW_LEN_(*self)) == 0;
+}
+
+cdict__u64 node_hasher(Node *self, cdict__u64 (*hash)(void *, size_t)) {
+  return hash(NODE__SYMBOL_STRINGVIEW_MEM_(*self),
+              NODE__SYMBOL_STRINGVIEW_LEN_(*self));
+}
+
+// natives
+Node nodeint__new(int val) {
+  return (Node){
+    .nodetype=NODE__INT,
+      .nodeval={
+        .nodeint={
+          .val=val
         }
       }
   };

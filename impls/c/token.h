@@ -9,6 +9,7 @@ typedef enum {
   TOKEN__SYMBOL,
   TOKEN__INT,
   TOKEN__STRING,
+  TOKEN__NIL,
   TOKEN__SEMICOLON,
   TOKEN__OTHER,
   TOKEN__TILDA_AT,
@@ -21,6 +22,8 @@ typedef enum {
   TOKEN__RIGHT_PAREN,
   TOKEN__APOSTROPHE,
   TOKEN__WEIRD,
+  TOKEN__TRUE,
+  TOKEN__FALSE,
   TOKEN__TILDA,
   TOKEN__CARRAT,
 } TokenType;
@@ -47,5 +50,10 @@ char *tokentype__name(TokenType tokentype);
 // token helpers
 bool token__is_def(const Token *token);
 bool token__is_let(const Token *token);
+
+bool token__is_nil(const char* const mem, size_t len);
+bool token__is_true(const char* const mem, size_t len);
+bool token__is_false(const char* const mem, size_t len);
+
 
 #endif // TOKEN_H

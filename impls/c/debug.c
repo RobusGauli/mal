@@ -28,7 +28,7 @@ Str debug__vector(Node node) {
     if (cvector_iterator__done(&cvector_iterator_nodes))
       break;
 
-    if (cvector_iterator_nodes.cvector_iterator__current_index_m != 0) {
+    if (cvector_iterator__current_index_(&cvector_iterator_nodes) != 0) {
       str__cappend(&result, ' ');
     }
 
@@ -50,7 +50,18 @@ Str debug__comment(Node node) {
   return result;
 }
 
-Str debug__string(Node node) { return str__dclone(&(NODE__STRING_STR_(node))); }
+Str debug__string(Node node) {
+  Str result = str__new();
+
+  str__cappend(&result, '"');
+  Str string = str__dclone(&(NODE__STRING_STR_(node)));
+  str__add(&result, &string);
+  str__free(&string);
+  str__cappend(&result, '"');
+  str__done(&result);
+
+  return result;
+}
 
 size_t digits_count(int val) {
   // domain error if the value is 0
@@ -96,7 +107,7 @@ Str debug__eof(Node node) {
 
 Str debug__nil(Node node) {
   Str result = str__new();
-  str__nappend(&result, "()");
+  str__nappend(&result, "nil");
   str__done(&result);
   return result;
 }
@@ -110,6 +121,48 @@ Str debug__empty(Node node) {
 Str debug__symbolvalue(Node node) {
   Str result = str__new();
   str__nappend(&result, "special function");
+  str__done(&result);
+  return result;
+}
+
+Str debug__true(Node node) {
+  Str result = str__new();
+  str__nappend(&result, "true");
+  str__done(&result);
+  return result;
+}
+
+
+Str debug__list(Node node) {
+  Str result = str__new();
+  str__nappend(&result, "(");
+
+  cvector_nodes_t* nodes = NODE__LIST_MEM_(node);
+  cvector_iterator_nodes_t iterator;
+
+  cvector_iterator__init(&iterator, nodes);
+
+  for(;;) {
+    if (cvector_iterator__done(&iterator)) break;
+    if (cvector_iterator__current_index_(&iterator) > 0) {
+      str__nappend(&result, " ");
+    }
+
+    Node curr =  cvector_iterator__next(&iterator);
+    Str curr_str = debug(curr);
+    str__add(&result, &curr_str);
+    str__free(&curr_str);
+  }
+
+  str__nappend(&result, ")");
+  str__done(&result);
+
+  return result;
+}
+
+Str debug__false(Node node) {
+  Str result = str__new();
+  str__nappend(&result, "false");
   str__done(&result);
   return result;
 }
@@ -149,9 +202,17 @@ Str debug(Node node) {
     return debug__empty(node);
     break;
   }
+  case NODE__FALSE:
+    return debug__false(node);
+
+  case NODE__TRUE:
+    return debug__true(node);
 
   case NODE__ERR:
     return debug__error(node);
+
+  case NODE__LIST:
+    return debug__list(node);
 
   default: { printf("unreachable"); }
   }

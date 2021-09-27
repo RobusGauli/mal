@@ -50,7 +50,7 @@ Node resolve_symbol(Node node, Env* env) {
 Node eval_vector(Node node, Env* env) {
   cvector_nodes_t *cvector_nodes = NODE__VECTOR_MEM_(node);
   if (!cvector__size(cvector_nodes)) {
-    return node_nil__new();
+    return node__empty_list();
   }
 
   Node first = cvector__first(cvector_nodes);
@@ -144,17 +144,9 @@ Node eval_vector(Node node, Env* env) {
         return node;
       }
 
-      if (cvector__size(cvector_nodes) != 3) {
-        Str str = str__new();
-        str__nappend(&str, "ValueError: argument's length must be 2");
-        str__done(&str);
-        return node_error__new(str);
-      }
-
       void *funcpointer = NODE__SYMBOLVALUE_FUNCPTR_(node);
-      Node (*func)(Node, Node) = funcpointer;
-      Node result_node = func(EVAL(cvector__index(cvector_nodes, 1), env),
-                              EVAL(cvector__index(cvector_nodes, 2), env));
+      Node (*func)(cvector_nodes_t* cvector_node, Env* env) = funcpointer;
+      Node result_node = func(cvector_nodes, env);
       return result_node;
     }
   }
@@ -194,6 +186,10 @@ Node EVAL(Node node, Env *env) {
   case NODE__EOF:
     return node;
   case NODE__ERR:
+    return node;
+  case NODE__TRUE:
+    return node;
+  case NODE__FALSE:
     return node;
   default:
     assert(0 && "unreachable");

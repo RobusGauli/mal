@@ -63,6 +63,14 @@ Node read_atom(cvector_iterator_tokens_t *cvector_iterator_tokens) {
 
     return node_symbol__new(token.stringview.mem, token.stringview.len,
                             NODESYMBOL__NORM_FORM);
+  case TOKEN__NIL:
+    return node_nil__new();
+
+  case TOKEN__TRUE:
+    return node_true__new();
+
+  case TOKEN__FALSE:
+    return node_false__new();
 
   default:
     assert(0 && printf("unreachable"));
