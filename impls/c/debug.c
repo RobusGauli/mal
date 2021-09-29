@@ -167,6 +167,13 @@ Str debug__false(Node node) {
   return result;
 }
 
+Str debug__function_closure(Node node) {
+  Str result = str__new();
+  str__nappend(&result, "<function>");
+  str__done(&result);
+  return result;
+}
+
 Str debug(Node node) {
   switch (node.nodetype) {
   case NODE__NIL:
@@ -213,6 +220,9 @@ Str debug(Node node) {
 
   case NODE__LIST:
     return debug__list(node);
+
+  case NODE__FUNCTION_CLOSURE:
+    return debug__function_closure(node);
 
   default: { printf("unreachable"); }
   }

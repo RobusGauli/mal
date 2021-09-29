@@ -1,4 +1,5 @@
 #include <inttypes.h>
+
 #include "node.h"
 #include "eval.h"
 #include "str.h"
@@ -153,4 +154,35 @@ Node nodeint__new(int val) {
         }
       }
   };
+}
+
+Node node_function_closure__new(void* env, cvector_nodes_t* cvector_nodes) {
+  return (Node){
+    .nodetype=NODE__FUNCTION_CLOSURE,
+      .nodeval= {
+        .nodefunctionclosure={
+          .env=env,
+          .cvector_nodes=cvector_nodes
+        }
+      }
+  };
+}
+
+const char* maltypename_fromnode(NodeType nodetype) {
+  switch(nodetype) {
+    case NODE__NIL: return "nil";
+    case NODE__INT: return "int";
+    case NODE__TRUE: return "true";
+    case NODE__FALSE: return "false";
+    case NODE__STRING: return "string";
+    case NODE__COMMENT: return "comment";
+    case NODE__SYMBOL: return "symbol";
+    case NODE__SYMBOL_VALUE: return "symbolvalue";
+    case NODE__VECTOR: return "vector";
+    case NODE__EMPTY: return "empty";
+    case NODE__EOF: return "eof";
+    case NODE__ERR: return "err";
+    case NODE__LIST: return "list";
+    case NODE__FUNCTION_CLOSURE: return "#<function>";
+  }
 }

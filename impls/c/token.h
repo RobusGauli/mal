@@ -50,6 +50,7 @@ char *tokentype__name(TokenType tokentype);
 // token helpers
 bool token__is_def(const Token *token);
 bool token__is_let(const Token *token);
+bool token__is_function_closure(const Token* token);
 
 bool token__is_nil(const char* const mem, size_t len);
 bool token__is_true(const char* const mem, size_t len);

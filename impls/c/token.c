@@ -203,6 +203,15 @@ bool token__is_def(const Token *token) {
   return strncmp(token->stringview.mem, "def!", 4) == 0;
 }
 
+
+bool token__is_function_closure(const Token* token) {
+  if (token -> stringview.len != 3) {
+    return false;
+  }
+
+  return strncmp(token->stringview.mem, "fn*", 3) == 0;
+}
+
 bool token__is_let(const Token *token) {
   if (token->stringview.len != 4) {
     return false;

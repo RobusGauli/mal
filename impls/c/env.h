@@ -12,6 +12,8 @@ typedef struct Env {
 
 // constructor
 Env env__new();
+Env env__new_with_binds(cvector_nodes_t* symbols, cvector_nodes_t* exprs);
+
 
 // setter and getters
 void env__set(Env* env, Node k, Node v);

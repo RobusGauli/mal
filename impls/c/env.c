@@ -18,6 +18,25 @@ Env env__new(void) {
   return env;
 }
 
+Env env__new_with_binds(cvector_nodes_t* symbols, cvector_nodes_t* exprs) {
+  Env env = env__new();
+  // create a iterator out of symbols
+  cvector_iterator_nodes_t s_iterator;
+  cvector_iterator__init(&s_iterator, symbols);
+
+  cvector_iterator_nodes_t e_iterator;
+  cvector_iterator__init(&e_iterator, exprs);
+
+  for(;;) {
+    if (cvector_iterator__done(&s_iterator) || cvector_iterator__done(&e_iterator)) break;
+    Node symbol = cvector_iterator__next(&s_iterator);
+    Node expr = cvector_iterator__next(&e_iterator);
+    env__set(&env, symbol, expr);
+  }
+
+  return env;
+}
+
 void env__set(Env *env, Node k, Node v) { cdict__add(&(env->current), k, v); }
 
 Env *env__find(Env *env, Node key) {

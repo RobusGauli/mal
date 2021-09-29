@@ -1,4 +1,6 @@
 /* Core file that contains the initial repl environment's functions */
+#include <assert.h>
+
 #include "core.h"
 #include "env.h"
 #include "eval.h"
@@ -45,6 +47,19 @@ Core core__new() {
   cdict__add(&cdict_node, NODE_SYMBOL__NEW_("=", 1),
              core__node_from_funcptr(core__is_eq));
 
+  cdict__add(&cdict_node, NODE_SYMBOL__NEW_("if", 2),
+             core__node_from_funcptr(core__if));
+
+  cdict__add(&cdict_node, NODE_SYMBOL__NEW_(">", 1),
+             core__node_from_funcptr(core__more));
+  cdict__add(&cdict_node, NODE_SYMBOL__NEW_("<", 1),
+             core__node_from_funcptr(core__less));
+  cdict__add(&cdict_node, NODE_SYMBOL__NEW_(">=", 2),
+             core__node_from_funcptr(core__more_equals));
+  cdict__add(&cdict_node, NODE_SYMBOL__NEW_("<=", 2),
+             core__node_from_funcptr(core__less_equals));
+  cdict__add(&cdict_node, NODE_SYMBOL__NEW_("fn*", 3),
+             core__node_from_funcptr(core__function_closure));
   return (Core){.ns = {.cdict_node = cdict_node}};
 }
 
@@ -216,6 +231,10 @@ Node core__count(cvector_nodes_t *cvector_nodes, Env *env) {
     return node;
   }
 
+  if (node.nodetype == NODE__NIL) {
+    return nodeint__new(0);
+  }
+
   if (node.nodetype != NODE__LIST) {
     Str str = str__new();
     str__nappend(&str, "TypeError: argument for 'count' be of type 'list'");
@@ -271,10 +290,10 @@ Node _core_eq(Env *env, Node first, Node second) {
     __unimplemented__;
 
   case NODE__EMPTY:
-    return node_true__new();
+    __unimplemented__;
 
   case NODE__EOF:
-    return node_true__new();
+    __unimplemented__;
 
   case NODE__ERR:
     __unimplemented__;
@@ -349,6 +368,216 @@ Node core__is_eq(cvector_nodes_t *cvector_nodes, Env *env) {
   }
 
   return _core_eq(env, first, second);
+}
+
+Node core__if(cvector_nodes_t *cvector_nodes, Env *env) {
+  cvector_iterator_nodes_t iterator;
+  cvector_iterator__init(&iterator, cvector_nodes);
+  // skip the first elem
+  assert(!cvector_iterator__done(&iterator));
+  cvector_iterator__next(&iterator);
+
+  if (cvector_iterator__done(&iterator))
+    return node_nil__new();
+
+  // grab the predicate
+  Node predicate = cvector_iterator__next(&iterator);
+
+  // evaluate
+  Node predicate_res = EVAL(predicate, env);
+
+  // check for the err
+  if (NODE__IS_ERR_(predicate_res))
+    return predicate_res;
+
+  // return nil if no evaluation node is available
+  if (cvector_iterator__done(&iterator))
+    return node_nil__new();
+
+  // evaluate the second argument if result is other than false / nil
+  if (!(NODE__IS_FALSE_(predicate_res) || NODE__IS_NIL_(predicate_res))){
+    Node truthy_node = cvector_iterator__next(&iterator);
+    // eval
+    return EVAL(truthy_node, env);
+  }
+
+  // if second argument is false or nil
+  // skip the truthy arg
+  cvector_iterator__next(&iterator);
+
+  // check to see if we have falsy arg
+  if (cvector_iterator__done(&iterator))
+    return node_nil__new();
+
+  // eval and return
+  Node falsy_node = cvector_iterator__next(&iterator);
+  // check to see if we have more elements and if that is the case throw out an
+  // error
+  if (!cvector_iterator__done(&iterator)) {
+    Str str = str__new();
+    str__nappend(&str, "'if' can't have more than 2 evaluation paths.");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  // just so that you know
+  return EVAL(falsy_node, env);
+}
+
+bool core__arg_len_mustbe(cvector_nodes_t* cvector_nodes, size_t len) {
+  return (cvector__size(cvector_nodes) - 1) == len;
+}
+
+Node core__more_equals(cvector_nodes_t* cvector_nodes, Env* env) {
+  // just to make sure how many parameters this function is going to take is kind of unknown
+  // just so that we know what we are doing
+  bool ok = core__arg_len_mustbe(cvector_nodes, 2);
+
+  if (!ok) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: '>=' takes exactly 2 arguments (");
+    str__intappend(&str, cvector__size(cvector_nodes) - 1);
+    str__nappend(&str, " given)");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  Node first = EVAL(cvector__index(cvector_nodes, 1), env);
+  if (NODE__IS_ERR_(first)) return first;
+
+  Node second = EVAL(cvector__index(cvector_nodes, 2), env);
+  if (NODE__IS_ERR_(second)) return second;
+
+  if (NODE__TYPE_(second) != NODE__INT || NODE__TYPE_(first) != NODE__INT) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: argument to '>=' must of type int");
+    str__nappend(&str, " (got '");
+    str__nappend(&str, maltypename_fromnode(NODE__TYPE_(first)));
+    str__nappend(&str, "')");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  if (NODE__INT_VAL_(first) >= NODE__INT_VAL_(second)) {
+    return node_true__new();
+  }
+
+  return node_false__new();
+}
+
+Node core__less_equals(cvector_nodes_t* cvector_nodes, Env* env) {
+  bool ok = core__arg_len_mustbe(cvector_nodes, 2);
+
+  if (!ok) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: '<=' takes exactly 2 arguments (");
+    str__intappend(&str, cvector__size(cvector_nodes) - 1);
+    str__nappend(&str, " given)");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  Node first = EVAL(cvector__index(cvector_nodes, 1), env);
+  if (NODE__IS_ERR_(first)) return first;
+
+  Node second = EVAL(cvector__index(cvector_nodes, 2), env);
+  if (NODE__IS_ERR_(second)) return second;
+
+  if (NODE__TYPE_(second) != NODE__INT || NODE__TYPE_(first) != NODE__INT) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: argument to '<=' must of type int");
+    str__nappend(&str, " (got '");
+    str__nappend(&str, maltypename_fromnode(NODE__TYPE_(first)));
+    str__nappend(&str, "')");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  if (NODE__INT_VAL_(first) <= NODE__INT_VAL_(second)) {
+    return node_true__new();
+  }
+
+  return node_false__new();
+}
+
+Node core__more(cvector_nodes_t* cvector_nodes, Env* env) {
+  bool ok = core__arg_len_mustbe(cvector_nodes, 2);
+
+  if (!ok) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: '>' takes exactly 2 arguments (");
+    str__intappend(&str, cvector__size(cvector_nodes) - 1);
+    str__nappend(&str, " given)");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  Node first = EVAL(cvector__index(cvector_nodes, 1), env);
+  if (NODE__IS_ERR_(first)) return first;
+
+  Node second = EVAL(cvector__index(cvector_nodes, 2), env);
+  if (NODE__IS_ERR_(second)) return second;
+
+  if (NODE__TYPE_(second) != NODE__INT || NODE__TYPE_(first) != NODE__INT) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: argument to '>' must of type int");
+    str__nappend(&str, " (got '");
+    str__nappend(&str, maltypename_fromnode(NODE__TYPE_(first)));
+    str__nappend(&str, "')");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  if (NODE__INT_VAL_(first) > NODE__INT_VAL_(second)) {
+    return node_true__new();
+  }
+
+  return node_false__new();
+
+}
+
+Node core__less(cvector_nodes_t* cvector_nodes, Env* env) {
+   bool ok = core__arg_len_mustbe(cvector_nodes, 2);
+
+  if (!ok) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: '<' takes exactly 2 arguments (");
+    str__intappend(&str, cvector__size(cvector_nodes) - 1);
+    str__nappend(&str, " given)");
+    str__done(&str);
+    return node_error__new(str);
+  }
+  Node first = EVAL(cvector__index(cvector_nodes, 1), env);
+  if (NODE__IS_ERR_(first)) return first;
+
+  Node second = EVAL(cvector__index(cvector_nodes, 2), env);
+  if (NODE__IS_ERR_(second)) return second;
+
+  if (NODE__TYPE_(second) != NODE__INT || NODE__TYPE_(first) != NODE__INT) {
+    Str str = str__new();
+    str__nappend(&str, "TypeError: argument to '<' must of type int");
+    str__nappend(&str, " (got '");
+    str__nappend(&str, maltypename_fromnode(NODE__TYPE_(first)));
+    str__nappend(&str, "')");
+    str__done(&str);
+    return node_error__new(str);
+  }
+
+  if (NODE__INT_VAL_(first) < NODE__INT_VAL_(second)) {
+    return node_true__new();
+  }
+
+  return node_false__new();
+}
+
+Node core__function_closure(cvector_nodes_t* cvector_nodes, Env* env){
+  /*if (!core__arg_len_mustbe(cvector_nodes, 2)) {*/
+    /*Str str = str__new();*/
+    /*str__nappend(&str, "ValueError: function closure must have binds and body");*/
+    /*str__done(&str);*/
+    /*return node_error__new(str);*/
+  /*}*/
+  return node_function_closure__new(env, cvector_nodes);
 }
 
 void core__setup_initial(Env *env, Core *core) {

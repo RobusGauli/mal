@@ -26,7 +26,7 @@ Node eval_node_symbol(Node node, Env env) {
   return node_symbol_value__new(n);
 }
 
-Node resolve_symbol(Node node, Env* env) {
+Node resolve_symbol(Node node, Env *env) {
 
   Str v = debug(node);
   Env *found_env = env__find(env, node);
@@ -47,8 +47,10 @@ Node resolve_symbol(Node node, Env* env) {
   return found_node;
 }
 
-Node eval_vector(Node node, Env* env) {
+Node eval_vector(Node node, Env *env) {
+
   cvector_nodes_t *cvector_nodes = NODE__VECTOR_MEM_(node);
+
   if (!cvector__size(cvector_nodes)) {
     return node__empty_list();
   }
@@ -59,6 +61,22 @@ Node eval_vector(Node node, Env* env) {
   // user> (+ (let* name 333 h (+ name 30)) 5) // answer is 338
   case NODE__SYMBOL: {
     NodeSymbolType symbol_type = NODE__SYMBOL_TYPE_(first);
+
+    if (symbol_type == NODESYMBOL__SPECIAL_FN_FORM) {
+
+      if (cvector__size(cvector_nodes) != 3) {
+        Str str = str__new();
+        str__nappend(&str, "ValueError: takes 2 positional arguments but ");
+        str__intappend(&str, cvector__size(cvector_nodes) - 1);
+        str__nappend(&str, " were given");
+        str__done(&str);
+        return node_error__new(str);
+      }
+
+      /*Node second = cvector__index(cvector_nodes, 1);*/
+      /*Node third = cvector__index(cvector_nodes, 2);*/
+      return node_function_closure__new(env, cvector_nodes);
+    }
 
     if (symbol_type == NODESYMBOL__SPECIAL_LET_FORM) {
       if (cvector__size(cvector_nodes) != 3) {
@@ -142,13 +160,66 @@ Node eval_vector(Node node, Env* env) {
 
       if (NODE__IS_ERR_(node)) {
         return node;
-      }
 
+      printf("the node type is: %d\n", node.nodetype);
       void *funcpointer = NODE__SYMBOLVALUE_FUNCPTR_(node);
-      Node (*func)(cvector_nodes_t* cvector_node, Env* env) = funcpointer;
+      Node (*func)(cvector_nodes_t * cvector_node, Env * env) = funcpointer;
       Node result_node = func(cvector_nodes, env);
       return result_node;
     }
+
+  case NODE__VECTOR: {
+    Node result = EVAL(first, env);
+    cvector_nodes_t *ns = NODE__FUNCTION_CVECTOR_(result);
+    if (NODE__TYPE_(result) == NODE__FUNCTION_CLOSURE) {
+      Node params = cvector__index(ns, 1);
+      assert(params.nodetype == NODE__VECTOR);
+
+      Node body = cvector__index(ns, 2);
+
+
+      cvector_nodes_t* cvector_params = NODE__VECTOR_MEM_(params);
+
+      cvector_nodes_t cvector_exprs;
+      cvector__init(&cvector_exprs);
+      cvector_iterator_nodes_t cvector_iterator;
+      cvector_iterator__init(&cvector_iterator, cvector_nodes);
+      /*// skip the first one*/
+      cvector_iterator__next(&cvector_iterator);
+      for(;;) {
+        if (cvector_iterator__done(&cvector_iterator)) break;
+
+        Node arg = EVAL(cvector_iterator__next(&cvector_iterator), env);
+        if (NODE__IS_ERR_(arg)) {
+          return arg;
+        }
+        cvector__add(&cvector_exprs, arg);
+      }
+
+      // extract the params
+      /*cvector_nodes_t* cvector_closure = NODE__FUNCTION_CVECTOR_(result);*/
+      /*Node params = cvector__index(cvector_closure, 1);*/
+
+      /*cvector_nodes_t* cvector_params = NODE__VECTOR_MEM_(params);*/
+
+      /*// create*/
+      /*printf("the size is: %ld\n", cvector__size(cvector_params));*/
+      Env closured_env = env__new_with_binds(cvector_params, &cvector_exprs);
+      closured_env.outer = env;
+
+      /*// evaluate the body*/
+      /*Node body = cvector__index(cvector_closure, 2);*/
+      Node func_result = EVAL(body, &closured_env);
+      return func_result;
+    }
+    return  result;
+  }
+
+  case NODE__FUNCTION_CLOSURE: {
+
+                                 printf("here is the result: %d\n", node.nodetype);
+    return node;
+  }
   }
 
   default: {
@@ -163,35 +234,35 @@ Node eval_vector(Node node, Env* env) {
     return node_error__new(str);
   }
   }
-}
+}}
 
 Node EVAL(Node node, Env *env) {
   switch (node.nodetype) {
-  case NODE__NIL:
-    return node;
-  case NODE__INT:
-    return node;
-  case NODE__STRING:
-    return node;
-  case NODE__COMMENT:
-    return node;
-  case NODE__SYMBOL:
-    return resolve_symbol(node, env);
-  case NODE__SYMBOL_VALUE:
-    return node;
-  case NODE__VECTOR:
-    return eval_vector(node, env);
-  case NODE__EMPTY:
-    return node;
-  case NODE__EOF:
-    return node;
-  case NODE__ERR:
-    return node;
-  case NODE__TRUE:
-    return node;
-  case NODE__FALSE:
-    return node;
-  default:
-    assert(0 && "unreachable");
+    case NODE__NIL:
+      return node;
+    case NODE__INT:
+      return node;
+    case NODE__STRING:
+      return node;
+    case NODE__COMMENT:
+      return node;
+    case NODE__SYMBOL:
+      return resolve_symbol(node, env);
+    case NODE__SYMBOL_VALUE:
+      return node;
+    case NODE__VECTOR:
+      return eval_vector(node, env);
+    case NODE__EMPTY:
+      return node;
+    case NODE__EOF:
+      return node;
+    case NODE__ERR:
+      return node;
+    case NODE__TRUE:
+      return node;
+    case NODE__FALSE:
+      return node;
+    default:
+      assert(0 && "unreachable");
   }
 }

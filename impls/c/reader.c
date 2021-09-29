@@ -44,6 +44,7 @@ Node read_list(cvector_iterator_tokens_t *cvector_iterator_tokens) {
 Node read_atom(cvector_iterator_tokens_t *cvector_iterator_tokens) {
 
   Token token = cvector_iterator__next(cvector_iterator_tokens);
+
   switch (token.tokentype) {
   case TOKEN__COMMENT:
     return node_comment__new(token.stringview.mem, token.stringview.len);
@@ -61,6 +62,10 @@ Node read_atom(cvector_iterator_tokens_t *cvector_iterator_tokens) {
                               NODESYMBOL__SPECIAL_LET_FORM);
     }
 
+    if (token__is_function_closure(&token)) {
+      return node_symbol__new(token.stringview.mem, token.stringview.len, NODESYMBOL__SPECIAL_FN_FORM);
+    }
+
     return node_symbol__new(token.stringview.mem, token.stringview.len,
                             NODESYMBOL__NORM_FORM);
   case TOKEN__NIL:
@@ -71,7 +76,6 @@ Node read_atom(cvector_iterator_tokens_t *cvector_iterator_tokens) {
 
   case TOKEN__FALSE:
     return node_false__new();
-
   default:
     assert(0 && printf("unreachable"));
   }

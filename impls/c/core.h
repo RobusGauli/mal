@@ -20,8 +20,15 @@ Node core__list(cvector_nodes_t* cvector_nodes, Env* env);
 Node core__is_list(cvector_nodes_t* cvector_nodes, Env* env);
 Node core__is_empty(cvector_nodes_t* cvector_nodes, Env* env);
 Node core__count(cvector_nodes_t* cvector_nodes, Env* env);
+Node core__if(cvector_nodes_t* cvector_nodes, Env* env);
 Node core__div(cvector_nodes_t* cvector_nodes, Env* env);
-Node core__is_eq(cvector_nodes_t* cvector_nodes, Env*env);
+Node core__is_eq(cvector_nodes_t* cvector_nodes, Env* env);
+Node core__more(cvector_nodes_t* cvector_nodes, Env* env);
+Node core__less(cvector_nodes_t* cvector_nodes, Env* env);
+Node core__more_equals(cvector_nodes_t* cvector_nodes, Env* env);
+Node core__less_equals(cvector_nodes_t* cvector_nodes, Env* env);
+Node core__function_closure(cvector_nodes_t* cvector_nodes, Env* env);
+
 
 void core__setup_initial(Env* env, Core* core);
 

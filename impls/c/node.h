@@ -14,12 +14,13 @@ typedef enum {
   NODE__STRING,
   NODE__COMMENT,
   NODE__SYMBOL,
-  NODE__SYMBOL_VALUE,
   NODE__VECTOR,
   NODE__EMPTY,
   NODE__EOF,
   NODE__ERR,
   NODE__LIST,
+  NODE__SYMBOL_VALUE,
+  NODE__FUNCTION_CLOSURE,
 } NodeType;
 
 typedef struct {
@@ -41,6 +42,7 @@ typedef enum {
   NODESYMBOL__NORM_FORM,
   NODESYMBOL__SPECIAL_LET_FORM,
   NODESYMBOL__SPECIAL_DEF_FORM,
+  NODESYMBOL__SPECIAL_FN_FORM,
 } NodeSymbolType;
 
 
@@ -88,20 +90,32 @@ typedef struct {
   void* mem;
 } NodeList;
 
+
 #define NODE__LIST_(node) ((node).nodeval.nodelist)
 #define NODE__LIST_MEM_(node) ((NODE__LIST_(node)).mem)
+
+
+typedef struct {
+  void* env;
+  void* cvector_nodes; // just pointer to vec
+} NodeFunctionClosure;
+
+#define NODE__FUNCTION_CLOSURE_(node) ((node).nodeval.nodefunctionclosure)
+#define NODE__FUNCTION_ENV_(node) (NODE__FUNCTION_CLOSURE_(node).env)
+#define NODE__FUNCTION_CVECTOR_(node) (NODE__FUNCTION_CLOSURE_(node).cvector_nodes)
 
 typedef struct Node {
   NodeType nodetype;
   union {
     NodeInt nodeint;
+    NodeList nodelist;
+    NodeError nodeerror;
     NodeSymbol nodesymbol;
-    NodeSymbolValue nodesymbolvalue;
     NodeVector nodevector;
     NodeString nodestring;
     NodeComment nodecomment;
-    NodeError nodeerror;
-    NodeList nodelist;
+    NodeSymbolValue nodesymbolvalue;
+    NodeFunctionClosure nodefunctionclosure;
   } nodeval;
 } Node;
 
@@ -122,7 +136,10 @@ Node node_eof__new(void);
 Node node_string__new(char* mem, size_t len);
 Node node_error__new(Str string);
 Node node_vector__new(cvector_nodes_t* cvector_nodes);
+Node node_function_closure__new(void* env, cvector_nodes_t* cvector_nodes);
 Node node_list__new(cvector_nodes_t* cvector_nodes);
+
+const char* maltypename_fromnode(NodeType nodetype);
 
 // might want to delete these
 Node node__empty_list(void);
@@ -136,6 +153,8 @@ cdict__u64 node_hasher(Node *self, cdict__u64 (*hash)(void *, size_t));
 //
 // helper macro
 #define NODE__IS_ERR_(node) ((node).nodetype == NODE__ERR)
+#define NODE__IS_FALSE_(node) ((node).nodetype == NODE__FALSE)
+#define NODE__IS_NIL_(node) ((node).nodetype == NODE__NIL)
 #define NODE_SYMBOL__NEW_(_mem, _len)                                          \
   ({                                                                           \
     (Node){.nodetype = NODE__SYMBOL,                                           \
