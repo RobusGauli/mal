@@ -1,45 +1,44 @@
 #define _POSIX_C_SOURCE 200809L
-
-#include <assert.h>
-#include <errno.h>
+#include <stdio.h>
 #include <readline/history.h>
 #include <readline/readline.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "debug.h"
-#include "deps/cdict.h/cdict.h"
-#include "reader.h"
+typedef struct {
+}  Mal;
 
-#include "env.h"
-#include "eval.h"
-#include "node.h"
-#include "str.h"
-#include "core.h"
-#include <math.h>
+Mal m_read(const char* input) {
+  return (Mal){};
+}
 
-Str PRINT(Node node) { return debug(node); }
+Mal m_eval(Mal mal) {
+  return (Mal){};
+}
 
-int main(void) {
+char* m_print(Mal mal) {
+  char* src = "echo world";
+  char* sample_string = malloc((sizeof(char) * strlen(src)) + (sizeof(char)));
+  memcpy(sample_string, src, strlen(src));
+  sample_string[strlen(src)] = '\0';
+  return sample_string;
+}
 
-  Env env = env__new();
-  Core core = core__new();
-  core__setup_initial(&env, &core);
+#define forever for (;;)
 
-  for (;;) {
-    char *input = readline("user> ");
-    if (input == NULL) { // EOF
-      exit(0);
-    }
+int main() {
 
-    Node node = READ(input);
-    Node evaluated_node = EVAL(node, &env);
-    Str result = PRINT(evaluated_node);
-    if (str__isempty(&result)) {
-      continue;
-    }
-    printf("%s\n", str__ascstr(&result));
+  forever {
+    char* input = readline("user>");
+
+    if (input == NULL) exit(0);
+
+    Mal mal = m_read(input);
+    Mal result =  m_eval(mal);
+    char* stringified = m_print(result);
+    printf("%s\n", stringified);
+    //
+    // free
+    free(stringified);
+    free(input);
   }
 }
