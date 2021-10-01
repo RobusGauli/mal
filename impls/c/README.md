@@ -41,7 +41,7 @@ An s-expression is defined recursively:
   s1, s2,... sn as s-expression, then so is the list of (s1, s2, ... sn).
   A list is non-atomic s-expression.
   A form is an s-expression that is intended to be evaluated.
-  Here is how form gets evaluated.
+  Here is how form gets evaluated:
     1. If s-expression is list, the first element is treated as a function and the subsequent elements are evaluated to obtain the function arguments.
     2. If s-expression is number, return the value of the number,
     3. If s-expression is symbol, return the value bound to that symbol.If the symbol is unbounded during evaluation, that is an error.
@@ -50,10 +50,10 @@ An s-expression is defined recursively:
 ### Code & Data being treated in Lisp using the s-expression
 
 Any s-expresion is by default treated as code. What does the mean? Well let me try to explain.
-When lisp encounters s-expression, it tries to treat is as an evaluable form i.e tries to evaluate. But, we stop this default behaviour by introducing special function called `quote`. When `quote` is used as a function for s-expression, it stops rest of the arguments to be evaluated. For example:
+When lisp encounters s-expression, it tries to treat is as an evaluable form i.e tries to evaluate. But, we stop this default behaviour by introducing special function called `quote`. When `quote` is used as a function for s-expression, it stops rest of the arguments to be evaluated. For example: \n
   (quote (+ a b)) => (+ a b)
 
-Without using quote
+Without using quote \n
   (+ a b) => result of whatever a+b is  (basically it gets evaluated)
 
 The fact that we can change the LISP default behaviour of treating s-expression as an evluable form and instead treat it as a data is what makes LISP powerful and unique. Thus, in lips s-expression can treated as both code and data. Hope this is good enough understanding. :)
