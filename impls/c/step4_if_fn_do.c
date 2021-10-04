@@ -1,81 +1,158 @@
 #define _POSIX_C_SOURCE 200809L
+#include <assert.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-typedef struct {
-} Mal;
+#include "deps/cvector/cvector.h"
+#include "mal.h"
+#include "token.h"
 
-typedef enum {
-  token_number,
-  token_string,
-  token_symbol,
-  token_left_paren,
-} e_toktype;
+t_cvector_mal *as_cvector_mal(Mal *mal) {
+  return (t_cvector_mal *)(mal->value);
+}
 
-const char *toktype_dbg(e_toktype toktype) {
-  switch (toktype) {
-  case token_number:
-    return "token_number";
-  case token_string:
-    return "token_string";
-  case token_symbol:
-    return "token_symbol";
-  case token_left_paren:
-    return "token_left_paren";
+int as_number(Mal *mal) { return (int)(mal->value); }
+
+char *as_string(Mal *mal) { return (char *)(mal->value); }
+
+char *as_symbol(Mal *mal) { return (char *)(mal->value); }
+
+Mal *read_atom(token_t *token) {
+  Mal *atom = malloc(sizeof(Mal));
+
+  switch (token->token_kind) {
+  case token_kind_number: {
+    int number = 0;
+    for (size_t i = 0; i < token->len; ++i) {
+      number = number * 10 + ((token->buffer)[i] - '0');
+    }
+    atom->type = mal_number;
+    atom->value = number;
+    return atom;
+  }
+
+  case token_kind_string: {
+    // string
+    char *string = malloc((sizeof(char) * token->len) + sizeof(char));
+    memcpy(string, token->buffer, token->len);
+    string[token->len] = '\0';
+    atom->type = mal_string;
+    atom->value = (uint64_t)string;
+    return atom;
+  }
+
+  case token_kind_symbol: {
+    char *string = malloc((sizeof(char) * token->len) + sizeof(char));
+    memcpy(string, token->buffer, token->len);
+    string[token->len] = '\0';
+    atom->type = mal_symbol;
+    atom->value = (uint64_t)(string);
+    return atom;
+  }
+
+  case token_kind_special_chr: {
+    if (strncmp("(", token->buffer, 1) == 0) {
+      return read_list(token);
+    }
+    char *string = malloc((sizeof(char) * token->len) + sizeof(char));
+    memcpy(string, token->buffer, token->len);
+    string[token->len] = '\0';
+    atom->type = mal_symbol;
+    atom->value = (uint64_t)(string);
+    return atom;
+  }
+
+  case token_kind_eol: {
+    atom->type = mal_error;
+    return atom;
+  }
+
+  case token_kind_unreachable:
+    assert(0 && "unreachable");
   }
 }
-// array of struct with token type, token buffer & token length
-typedef struct {
-  e_toktype type;
-  const char *buffer;
-  size_t len;
-} t_token;
 
-t_token *shift(char **input) {
-  t_token *token = malloc(sizeof(t_token));
-  token->buffer = NULL;
+Mal *read_list(token_t *token) { return NULL; }
 
-  if ((**input) == '(') {
-    token->buffer = *input;
-    token->type = token_left_paren;
-    token->len = 1;
-    (*input)++;
+Mal *m_read(char *input) {
+  tokens_t toks = tokens(input);
+  tokens_iterator_t iter = tokens_iterator(&toks);
+
+  while (!cvector_iterator__done(&iter)) {
+    token_t *token = cvector_iterator__peek(&iter);
+    printf("%s -> %.*s\n", token_kind_name(token), (int)token->len,
+           token->buffer);
+    cvector_iterator__next(&iter);
   }
-  return token;
-}
-// this thing need a pointer to char
-Mal m_read(char *input) {
-  t_token *token = shift(&input);
-  printf("token type: %s\n", toktype_dbg(token -> type ));
-  return (Mal){};
+  return NULL;
 }
 
-Mal m_eval(Mal mal) { return (Mal){}; }
+Mal *m_eval(Mal *mal) { return mal; }
 
-char *m_print(Mal mal) {
-  char *src = "echo world";
-  char *sample_string = malloc((sizeof(char) * strlen(src)) + (sizeof(char)));
-  memcpy(sample_string, src, strlen(src));
-  sample_string[strlen(src)] = '\0';
-  return sample_string;
+void debug(Mal *mal) {
+  if (!mal) {
+    return;
+  }
+
+  switch (mal->type) {
+  case mal_string: {
+    char *string = as_string(mal);
+    printf("%s", string);
+    break;
+  }
+
+  case mal_number: {
+    int val = as_number(mal);
+    printf("%d", val);
+    break;
+  }
+
+  case mal_list: {
+    printf("(");
+    t_cvector_mal *cvector = as_cvector_mal(mal);
+    t_cvector_mal_iterator iterator;
+    cvector_iterator__init(&iterator, cvector);
+    for (;;) {
+      if (cvector_iterator__done(&iterator))
+        break;
+      Mal *next = cvector_iterator__next(&iterator);
+      debug(next);
+    }
+    printf(")");
+    break;
+  }
+
+  case mal_symbol: {
+    printf("%s", as_symbol(mal));
+    break;
+  }
+
+  case mal_error:
+    printf("error");
+    break;
+  }
 }
+
+char *m_print(Mal *mal) {
+  debug(mal);
+  return NULL;
+}
+
+// as ptr
 
 int main() {
 
+  // as pointer
   for (;;) {
-    char *input = readline("user>");
+    char *input = readline("user> ");
 
     if (input == NULL) {
       exit(0);
     };
 
-    Mal mal = m_read(input);
-    Mal result = m_eval(mal);
-    char *stringified = m_print(result);
-    printf("%s\n", stringified);
-    free(stringified);
+    Mal *mal = m_read(input);
     free(input);
   }
 }
