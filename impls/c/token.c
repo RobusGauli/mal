@@ -123,9 +123,6 @@ token_t *token_next(char **input) {
     (*input)++;
   }
 
-  if (_start == *input) {
-    return NULL;
-  }
 
   token_t *token = malloc(sizeof(token_t));
   token->buffer = _start;
@@ -151,4 +148,17 @@ tokens_iterator_t tokens_iterator(tokens_t *tokens) {
   tokens_iterator_t tokens_iterator;
   cvector_iterator__init(&tokens_iterator, tokens);
   return tokens_iterator;
+}
+// helper functions to recognize tokens
+bool token_is_left_paren(token_t* token) {
+  return (token -> len == 1) && strncmp(token -> buffer, "(", 1) == 0;
+}
+
+
+bool token_is_right_paren(token_t* token) {
+  return (token -> len == 1) && strncmp(token -> buffer, ")", 1) == 0;
+}
+
+bool token_is_symbol(token_t* token) {
+  return (token -> token_kind) == (token_kind_symbol);
 }

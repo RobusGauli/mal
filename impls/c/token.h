@@ -28,11 +28,12 @@ tokens_t tokens(char* input);
 
 // constructor for iterator
 tokens_iterator_t tokens_iterator(tokens_t* tokens);
-
-
 token_t* token_next(char** input);
-
 const char* token_kind_name(token_t* token);
 
-char* token_as_cstr(token_t* token);
+// helper functions to recognize tokens
+bool token_is_left_paren(token_t* token);
+bool token_is_right_paren(token_t* token);
+bool token_is_symbol(token_t* token);
+
 #endif

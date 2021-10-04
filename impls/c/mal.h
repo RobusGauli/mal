@@ -5,27 +5,28 @@
 #include "deps/cvector/cvector.h"
 #include "token.h"
 
-typedef enum t_maltype{
+typedef enum mal_kind_e{
   mal_string,
   mal_number,
   mal_list,
   mal_symbol,
   mal_error,
-} t_maltype;
+} mal_kind_e;
 
-typedef struct Mal {
-  t_maltype type;
+typedef struct mal_t {
+  mal_kind_e type;
   uint64_t value;
-} Mal;
+} mal_t;
 
 // just another way to make sense
-CVector(Mal *) t_cvector_mal;
-CVector_iterator(t_cvector_mal) t_cvector_mal_iterator;
+CVector(mal_t *) mals_t;
+CVector_iterator(mals_t) mals_iterator_t;
 
 
-Mal *m_read(char *input);
-Mal* read_list(token_t* token);
-Mal* read_atom(token_t* token);
+mal_t *m_read(char *input);
+mal_t* read_form(tokens_iterator_t* tokens_iterator);
+mal_t* read_list(tokens_iterator_t* tokens_iterator);
+mal_t* read_atom(tokens_iterator_t* tokens_iterator);
 
-char *m_print(Mal *mal);
+char *m_print(mal_t *mal);
 #endif

@@ -9,18 +9,20 @@
 #include "mal.h"
 #include "token.h"
 
-t_cvector_mal *as_cvector_mal(Mal *mal) {
-  return (t_cvector_mal *)(mal->value);
+mals_t *as_cvector_mal(mal_t *mal) {
+  return (mals_t *)(mal->value);
 }
 
-int as_number(Mal *mal) { return (int)(mal->value); }
+int as_number(mal_t *mal) { return (int)(mal->value); }
 
-char *as_string(Mal *mal) { return (char *)(mal->value); }
+char *as_string(mal_t *mal) { return (char *)(mal->value); }
 
-char *as_symbol(Mal *mal) { return (char *)(mal->value); }
+char *as_symbol(mal_t *mal) { return (char *)(mal->value); }
 
-Mal *read_atom(token_t *token) {
-  Mal *atom = malloc(sizeof(Mal));
+mal_t *read_atom(tokens_iterator_t* tokens_iterator) {
+  mal_t *atom = malloc(sizeof(mal_t));
+
+  token_t* token = cvector_iterator__next(tokens_iterator);
 
   switch (token->token_kind) {
   case token_kind_number: {
@@ -53,9 +55,6 @@ Mal *read_atom(token_t *token) {
   }
 
   case token_kind_special_chr: {
-    if (strncmp("(", token->buffer, 1) == 0) {
-      return read_list(token);
-    }
     char *string = malloc((sizeof(char) * token->len) + sizeof(char));
     memcpy(string, token->buffer, token->len);
     string[token->len] = '\0';
@@ -74,24 +73,63 @@ Mal *read_atom(token_t *token) {
   }
 }
 
-Mal *read_list(token_t *token) { return NULL; }
+mal_t *read_list(tokens_iterator_t* tokens_iterator) {
+  // skip the thing
+  cvector_iterator__next(tokens_iterator);
 
-Mal *m_read(char *input) {
-  tokens_t toks = tokens(input);
-  tokens_iterator_t iter = tokens_iterator(&toks);
+  mal_t* mal = malloc(sizeof(mal_t));
+  mals_t* mals = malloc(sizeof(mals_t));
 
-  while (!cvector_iterator__done(&iter)) {
-    token_t *token = cvector_iterator__peek(&iter);
-    printf("%s -> %.*s\n", token_kind_name(token), (int)token->len,
-           token->buffer);
-    cvector_iterator__next(&iter);
+  mal -> type  = mal_list;
+  mal -> value = (uint64_t)mals;
+
+  cvector__init(mals);
+
+  bool balanced = false;
+  while(!cvector_iterator__done(tokens_iterator)) {
+    token_t* token = cvector_iterator__peek(tokens_iterator);
+
+    if (token_is_right_paren(token)) {
+      balanced = true;
+      cvector_iterator__next(tokens_iterator);
+      break;
+    }
+
+    cvector__add(mals, read_form(tokens_iterator));
+  }
+
+  if (!balanced) {
+    fprintf(stderr, "Unbalanced paren\n");
+    exit(1);
+  }
+
+  return mal;
+}
+
+mal_t* read_form(tokens_iterator_t* tokens_iterator) {
+  while (!cvector_iterator__done(tokens_iterator)) {
+
+    token_t *token = cvector_iterator__peek(tokens_iterator);
+
+    if (token_is_left_paren(token)) {
+      return read_list(tokens_iterator);
+    }
+
+    return read_atom(tokens_iterator);
   }
   return NULL;
 }
 
-Mal *m_eval(Mal *mal) { return mal; }
+mal_t *m_read(char *input) {
+  tokens_t toks = tokens(input);
+  tokens_iterator_t iter = tokens_iterator(&toks);
 
-void debug(Mal *mal) {
+  return read_form(&iter);
+}
+
+mal_t *m_eval(mal_t *mal) { return mal; }
+
+void debug(mal_t *mal) {
   if (!mal) {
     return;
   }
@@ -111,13 +149,13 @@ void debug(Mal *mal) {
 
   case mal_list: {
     printf("(");
-    t_cvector_mal *cvector = as_cvector_mal(mal);
-    t_cvector_mal_iterator iterator;
+    mals_t *cvector = as_cvector_mal(mal);
+    mals_iterator_t iterator;
     cvector_iterator__init(&iterator, cvector);
     for (;;) {
       if (cvector_iterator__done(&iterator))
         break;
-      Mal *next = cvector_iterator__next(&iterator);
+      mal_t *next = cvector_iterator__next(&iterator);
       debug(next);
     }
     printf(")");
@@ -135,7 +173,7 @@ void debug(Mal *mal) {
   }
 }
 
-char *m_print(Mal *mal) {
+char *m_print(mal_t *mal) {
   debug(mal);
   return NULL;
 }
@@ -152,7 +190,9 @@ int main() {
       exit(0);
     };
 
-    Mal *mal = m_read(input);
+    mal_t *mal = m_read(input);
+    debug(mal);
+    printf("\n");
     free(input);
   }
 }
