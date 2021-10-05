@@ -22,11 +22,4 @@ typedef struct mal_t {
 CVector(mal_t *) mals_t;
 CVector_iterator(mals_t) mals_iterator_t;
 
-
-mal_t *m_read(char *input);
-mal_t* read_form(tokens_iterator_t* tokens_iterator);
-mal_t* read_list(tokens_iterator_t* tokens_iterator);
-mal_t* read_atom(tokens_iterator_t* tokens_iterator);
-
-char *m_print(mal_t *mal);
 #endif
