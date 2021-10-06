@@ -18,8 +18,11 @@ typedef struct mal_t {
   uint64_t value;
 } mal_t;
 
-// just another way to make sense
+// vectors
 CVector(mal_t *) mals_t;
 CVector_iterator(mals_t) mals_iterator_t;
+
+// Iterator helpers
+mals_iterator_t mals_iterator(mals_t* mals);
 
 #endif

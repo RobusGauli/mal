@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 mal_t *read_list(tokens_iterator_t *tokens_iterator) {
-  // skip the thing
+  // skip '('
   cvector_iterator__next(tokens_iterator);
 
   mal_t *mal = malloc(sizeof(mal_t));
@@ -106,8 +106,15 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
 }
 
 mal_t *READ(char *input) {
+
   tokens_t toks = tokens(input);
   tokens_iterator_t iter = tokens_iterator(&toks);
+  tokens_iterator_t iter1 = tokens_iterator(&toks);
+
+  while(!cvector_iterator__done(&iter1)) {
+    token_t* tok = cvector_iterator__next(&iter1);
+  }
+
 
   return read_form(&iter);
 }

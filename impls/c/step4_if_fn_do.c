@@ -9,6 +9,7 @@
 #include "mal.h"
 #include "token.h"
 #include "reader.h"
+#include "print.h"
 
 mal_t *m_eval(mal_t *mal) { return mal; }
 
@@ -67,8 +68,8 @@ int main() {
     };
 
     mal_t *mal = READ(input);
-    debug(mal);
-    printf("\n");
+    char* value = PRINT(mal);
+    printf("%s\n", value);
     free(input);
   }
 }

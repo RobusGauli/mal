@@ -14,11 +14,18 @@ token: token.c
 reader: reader.c
 	$(CC) -o reader -c $(CFLAGS) reader.c
 
-$(s4): $(s4_source) token reader
-	$(CC) -o $@ $(CFLAGS) $(s4_source) reader token $(CLIBS)
+print: print.c
+	$(CC) -o print -c $(CFLAGS) print.c
+
+mal: mal.c
+	$(CC) -o mal -c $(CFLAGS) mal.c
+
+
+$(s4): $(s4_source) token reader print mal
+	$(CC) -o $@ $(CFLAGS) $(s4_source) print reader token mal $(CLIBS)
 
 .PHONY clean:
-	rm -rf step4_if_fn_do token
+	rm -rf step4_if_fn_do token reader mal print
 
 current: $(s4)
 	./$(s4)
