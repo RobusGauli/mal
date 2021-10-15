@@ -7,11 +7,11 @@
 
 #include "deps/cvector/cvector.h"
 #include "mal.h"
-#include "token.h"
-#include "reader.h"
 #include "print.h"
-
-mal_t *m_eval(mal_t *mal) { return mal; }
+#include "reader.h"
+#include "token.h"
+#include "eval.h"
+#include "env.h"
 
 void debug(mal_t *mal) {
   if (!mal) {
@@ -59,7 +59,9 @@ void debug(mal_t *mal) {
 
 int main() {
 
-  // as pointer
+  // create a new environment
+  Env env = root_env();
+
   for (;;) {
     char *input = readline("user> ");
 
@@ -68,7 +70,8 @@ int main() {
     };
 
     mal_t *mal = READ(input);
-    char* value = PRINT(mal);
+    mal_t *evaluated = EVAL(mal, env);
+    char *value = PRINT(evaluated);
     printf("%s\n", value);
     free(input);
   }

@@ -8,7 +8,6 @@
 
 CVector(char) string_t;
 
-
 char *num_to_string(int num) {
   int length = num == 0 ? 1 : (int)(log10((double)(num)) + 1);
   int index = length;
@@ -40,7 +39,6 @@ void str_add(string_t* dst, char* arg) {
 
 
 char *PRINT(mal_t *mal) {
-  // just return the things out the thing
   switch (mal->type) {
   case mal_string: {
     char *value = str_cpy(as_string(mal));
@@ -51,6 +49,7 @@ char *PRINT(mal_t *mal) {
     char *value = num_to_string(as_number(mal));
     return value;
   }
+
   case mal_list: {
     string_t string;
     cvector__init(&string);
@@ -59,6 +58,9 @@ char *PRINT(mal_t *mal) {
     mals_iterator_t mals_iter = mals_iterator(mals);
 
     while(!cvector_iterator__done(&mals_iter)) {
+      if (cvector_iterator__current_index_(&mals_iter) > 0) {
+        cvector__add(&string, ' ');
+      }
       mal_t* mal = cvector_iterator__next(&mals_iter);
       char* mal_printable_string = PRINT(mal);
       str_add(&string, mal_printable_string);
@@ -71,7 +73,12 @@ char *PRINT(mal_t *mal) {
 
   case mal_symbol:
     return str_cpy(as_string(mal));
+
+  case mal_error:
+    return (char*)(mal -> value);
+
   default:
+    fprintf(stderr, "[ERROR]: could not print the mal_type: %s\n", mal_kind_name(mal -> type));
     assert(0 && "unreachable");
   }
 }
