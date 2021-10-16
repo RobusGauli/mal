@@ -57,10 +57,34 @@ void debug(mal_t *mal) {
   }
 }
 
+mal_t* create_symbol_for(char* string) {
+  mal_t* sym = malloc(sizeof(mal_t));
+  sym -> type = mal_symbol;
+  sym -> value = (uint64_t)string;
+  return sym;
+}
+
+mal_t* create_func_for(void* func) {
+  mal_t* f = malloc(sizeof(mal_t));
+  f -> type = mal_func;
+  f -> value = (uint64_t)(func);
+  return f;
+}
+
+void setup_core_env(Env* env) {
+  env_set(env, create_symbol_for("+"), create_func_for(core_add));
+  env_set(env, create_symbol_for("*"), create_func_for(core_mul));
+  env_set(env, create_symbol_for("/"), create_func_for(core_div));
+  env_set(env, create_symbol_for("-"), create_func_for(core_sub));
+}
+
 int main() {
 
-  // create a new environment
-  Env env = root_env();
+  // create a new environment/
+  // setup of root environment
+  Env* env = new_env(NULL);
+
+  setup_core_env(env);
 
   for (;;) {
     char *input = readline("user> ");

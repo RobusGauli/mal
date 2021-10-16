@@ -4,20 +4,24 @@
 #include "mal.h"
 #include "deps/cdict.h/cdict.h"
 
-typedef char* string;
-
 typedef mal_t* mal_ptr_t;
-
-CDict(string, mal_ptr_t) cdict_env_t;
+CDict(mal_ptr_t, mal_ptr_t) cdict_env_t;
 
 typedef struct Env {
-  cdict_env_t* current;
-  cdict_env_t* prev;
+  struct Env* prev;
+  cdict_env_t data;
 } Env;
 
-Env root_env();
-Env env();
+Env* new_env(Env* prev);
 
-mal_t* env_get(Env env, mal_t* symbol);
+mal_t* env_get(Env* env, mal_t* symbol);
+Env* env_find(Env* env, mal_t* symbol);
+void env_set(Env* env, mal_t* symbol, mal_t* value);
+
+// core functions
+mal_t* core_add(mal_t* arg);
+mal_t* core_mul(mal_t* arg);
+mal_t* core_sub(mal_t* arg);
+mal_t* core_div(mal_t* arg);
 
 #endif

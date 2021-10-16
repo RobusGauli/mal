@@ -4,6 +4,6 @@
 #include "mal.h"
 #include "env.h"
 
-mal_t* EVAL(mal_t* mal, Env env);
+mal_t* EVAL(mal_t* mal, Env* env);
 
 #endif
