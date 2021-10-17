@@ -13,6 +13,7 @@ typedef struct Env {
 } Env;
 
 Env* new_env(Env* prev);
+Env* new_env_with_binds(Env* prev, mal_t* binds, mal_t* exprs);
 
 mal_t* env_get(Env* env, mal_t* symbol);
 Env* env_find(Env* env, mal_t* symbol);

@@ -15,6 +15,7 @@ typedef enum mal_kind_e{
   mal_symbol,
   mal_error,
   mal_func,
+  mal_core_func,
 } mal_kind_e;
 
 typedef struct mal_t {

@@ -79,6 +79,28 @@ Env* new_env(Env* prev) {
   return env;
 }
 
+Env* new_env_with_binds(Env* prev, mal_t* binds, mal_t* exprs) {
+  Env* env = new_env(prev);
+  assert(binds -> type == mal_list);
+  assert(exprs -> type == mal_list);
+  mals_t* binds_list = (mals_t*)(binds -> value);
+  mals_t* exprs_list = (mals_t*)(exprs -> value);
+
+  assert(cvector__size(binds_list) == cvector__size(exprs_list));
+
+  mals_iterator_t binds_iter = mals_iterator(binds_list);
+  mals_iterator_t exprs_iter = mals_iterator(exprs_list);
+
+  for (;;) {
+    if (cvector_iterator__done(&binds_iter)) break;
+
+    mal_t* key = cvector_iterator__next(&binds_iter);
+    mal_t* value = cvector_iterator__next(&exprs_iter);
+    env_set(env, key, value);
+  }
+
+  return env;
+}
 
 Env* env_find(Env* env, mal_t* symbol) {
 

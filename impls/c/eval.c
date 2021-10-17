@@ -19,6 +19,16 @@ bool is_func_form(mal_t* mal) {
   return mal -> type == mal_symbol && strncmp((char*) mal -> value, "fn*", 3) == 0;
 }
 
+bool is_mal_func(mal_t* mal) {
+  return mal -> type == mal_func;
+}
+
+mal_t* eval_mal_func(mals_t* mals, Env* env) {
+  printf("evaluating the function\n");
+  fflush(stdout);
+  return NULL;
+}
+
 mal_t* eval_def_form(mals_t* mals, Env* env) {
 
   // take second argument
@@ -79,7 +89,7 @@ mal_t* eval_func_form(mals_t* args, Env* env ) {
 
   mal_t* result = new_mal();
   result -> type = mal_func;
-  result -> value = (u64)(mal_func);
+  result -> value = (u64)(closure);
   return result;
 }
 
@@ -101,7 +111,6 @@ mal_t *EVAL(mal_t *mal, Env *env) {
     }
 
     mal_t *first = cvector__index(mals, 0);
-    assert(first->type == mal_symbol);
 
     if (is_let_form(first)) {
       return eval_let_form(mals, env);
@@ -114,6 +123,8 @@ mal_t *EVAL(mal_t *mal, Env *env) {
     if (is_func_form(first)) {
       return eval_func_form(mals, env);
     }
+
+    /*assert(first->type == mal_symbol);*/
     // usual invocation
     mal_t *resolved = EVAL(first, env);
 
@@ -121,7 +132,41 @@ mal_t *EVAL(mal_t *mal, Env *env) {
       return resolved;
     }
 
-    mals_t *evaluated_mals = malloc(sizeof(mal_t *));
+    if (resolved -> type == mal_func) {
+      // function closure
+      closure_t* closure = (closure_t*)resolved -> value;
+
+      Env* closed_env = closure -> env;
+      printf(">>>>\n");
+      fflush(stdout);
+
+      mals_t *evaluated_mals = malloc(sizeof(mals_t *));
+      mals_iterator_t mals_iterator;
+      cvector_iterator__init(&mals_iterator, mals);
+
+      // skip the first one
+      cvector_iterator__next(&mals_iterator);
+
+      for (;;) {
+        if (cvector_iterator__done(&mals_iterator))
+          break;
+        mal_t *result = EVAL(cvector_iterator__next(&mals_iterator), env);
+        if (mal_is_error(result)) {
+          return result;
+        }
+        cvector__add(evaluated_mals, result);
+      }
+
+      mal_t* evaluated_exprs = new_mal();
+      evaluated_exprs -> type = mal_list;
+      evaluated_exprs -> value = (u64)(evaluated_mals);
+
+
+      Env* new_env = new_env_with_binds(closed_env, closure -> binds, evaluated_exprs);
+      return EVAL(closure -> body, new_env);
+    }
+
+    mals_t *evaluated_mals = malloc(sizeof(mals_t *));
     mals_iterator_t mals_iterator;
     cvector_iterator__init(&mals_iterator, mals);
 

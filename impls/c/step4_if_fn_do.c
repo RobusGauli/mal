@@ -67,7 +67,7 @@ mal_t* create_symbol_for(char* string) {
 
 mal_t* create_func_for(void* func) {
   mal_t* f = malloc(sizeof(mal_t));
-  f -> type = mal_func;
+  f -> type = mal_core_func;
   f -> value = (u64)(func);
   return f;
 }

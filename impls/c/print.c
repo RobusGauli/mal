@@ -52,6 +52,9 @@ char *PRINT(mal_t *mal) {
     return "#<function>";
   }
 
+  case mal_core_func: {
+                        return "#<core:function>";
+                      }
   default:
     fprintf(stderr, "[ERROR]: could not print the mal_type: %s\n",
             mal_kind_name(mal->type));
