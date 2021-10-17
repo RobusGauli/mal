@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "mal.h"
 #include "closure.h"
+#include "types.h"
 
 
 mals_iterator_t mals_iterator(mals_t *mals) {
@@ -40,13 +41,13 @@ mal_t* new_mal() {
 mal_t* new_mal_error(string_t* string) {
   mal_t* mal = new_mal();
   mal -> type = mal_error;
-  mal -> value = (uint64_t)string;
+  mal -> value = (u64)string;
   return mal;
 }
 
 mal_t* new_mal_func(closure_t* closure) {
   mal_t* mal = new_mal();
   mal -> type = mal_func;
-  mal -> value = (uint64_t)closure;
+  mal -> value = (u64)closure;
   return mal;
 }

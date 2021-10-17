@@ -1,6 +1,7 @@
 #include "reader.h"
 #include <assert.h>
 #include <stdio.h>
+#include "types.h"
 
 mal_t *read_list(tokens_iterator_t *tokens_iterator) {
   // skip '('
@@ -10,7 +11,7 @@ mal_t *read_list(tokens_iterator_t *tokens_iterator) {
   mals_t *mals = malloc(sizeof(mals_t));
 
   mal->type = mal_list;
-  mal->value = (uint64_t)mals;
+  mal->value = (u64)mals;
 
   cvector__init(mals);
 
@@ -71,7 +72,7 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
     memcpy(string, token->buffer, token->len);
     string[token->len] = '\0';
     atom->type = mal_string;
-    atom->value = (uint64_t)string;
+    atom->value = (u64)string;
     return atom;
   }
 
@@ -80,7 +81,7 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
     memcpy(string, token->buffer, token->len);
     string[token->len] = '\0';
     atom->type = mal_symbol;
-    atom->value = (uint64_t)(string);
+    atom->value = (u64)(string);
     return atom;
   }
 
@@ -89,7 +90,7 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
     memcpy(string, token->buffer, token->len);
     string[token->len] = '\0';
     atom->type = mal_symbol;
-    atom->value = (uint64_t)(string);
+    atom->value = (u64)(string);
     return atom;
   }
 

@@ -140,7 +140,7 @@ mal_t *EVAL(mal_t *mal, Env *env) {
     mal_func_t func = (mal_func_t)(resolved->value);
     mal_t *argument = malloc(sizeof(mal_t));
     argument->type = mal_list;
-    argument->value = (uint64_t)evaluated_mals;
+    argument->value = (u64)evaluated_mals;
 
     return func(argument);
   }

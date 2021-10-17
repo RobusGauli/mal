@@ -11,6 +11,7 @@
 #include "reader.h"
 #include "token.h"
 #include "eval.h"
+#include "types.h"
 #include "env.h"
 
 void debug(mal_t *mal) {
@@ -60,14 +61,14 @@ void debug(mal_t *mal) {
 mal_t* create_symbol_for(char* string) {
   mal_t* sym = malloc(sizeof(mal_t));
   sym -> type = mal_symbol;
-  sym -> value = (uint64_t)string;
+  sym -> value = (u64)string;
   return sym;
 }
 
 mal_t* create_func_for(void* func) {
   mal_t* f = malloc(sizeof(mal_t));
   f -> type = mal_func;
-  f -> value = (uint64_t)(func);
+  f -> value = (u64)(func);
   return f;
 }
 

@@ -6,6 +6,7 @@
 #include "deps/cvector/cvector.h"
 #include "token.h"
 #include "str.h"
+#include "types.h"
 
 typedef enum mal_kind_e{
   mal_string,
@@ -18,7 +19,7 @@ typedef enum mal_kind_e{
 
 typedef struct mal_t {
   mal_kind_e type;
-  uint64_t value;
+  u64 value;
 } mal_t;
 
 // vectors

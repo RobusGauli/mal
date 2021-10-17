@@ -6,6 +6,7 @@
 #include "env.h"
 #include "str.h"
 #include "mal.h"
+#include "types.h"
 
 mal_t* core_add(mal_t* arg) {
   mals_t* args = (mals_t*)(arg -> value);
@@ -15,7 +16,7 @@ mal_t* core_add(mal_t* arg) {
 
   mal_t* result = malloc(sizeof(mal_t));
   result -> type = mal_number;
-  result -> value = (uint64_t)(a+b);
+  result -> value = (u64)(a+b);
   return result;
 }
 
@@ -25,7 +26,7 @@ mal_t* core_mul(mal_t* arg) {
   int b  = cvector__index(args, 1) -> value;
   mal_t* result = malloc(sizeof(mal_t));
   result -> type = mal_number;
-  result -> value = (uint64_t)(a*b);
+  result -> value = (u64)(a*b);
   return result;
 }
 
@@ -35,7 +36,7 @@ mal_t* core_sub(mal_t* arg) {
   int b  = cvector__index(args, 1) -> value;
   mal_t* result = malloc(sizeof(mal_t));
   result -> type = mal_number;
-  result -> value = (uint64_t)(a-b);
+  result -> value = (u64)(a-b);
   return result;
 }
 
@@ -45,7 +46,7 @@ mal_t* core_div(mal_t* arg) {
   int b  = cvector__index(args, 1) -> value;
   mal_t* result = malloc(sizeof(mal_t));
   result -> type = mal_number;
-  result -> value = (uint64_t)(a/b);
+  result -> value = (u64)(a/b);
   return result;
 }
 
