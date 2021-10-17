@@ -25,12 +25,14 @@ eval: eval.c
 
 env: env.c
 	$(CC) -o env -c $(CFLAGS) env.c
+str: str.c
+	$(CC) -o str -c $(CFLAGS) str.c
 
-$(s4): $(s4_source) token reader print mal eval env
-	$(CC) -o $@ $(CFLAGS) $(s4_source) print eval env reader token mal $(CLIBS)
+$(s4): $(s4_source) token reader print mal eval env str
+	$(CC) -o $@ $(CFLAGS) $(s4_source) print eval env str reader token mal $(CLIBS)
 
 .PHONY clean:
-	rm -rf step4_if_fn_do token reader mal print env eval
+	rm -rf step4_if_fn_do token reader mal print env eval str
 
 current: $(s4)
 	./$(s4)

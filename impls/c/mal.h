@@ -5,6 +5,7 @@
 
 #include "deps/cvector/cvector.h"
 #include "token.h"
+#include "str.h"
 
 typedef enum mal_kind_e{
   mal_string,
@@ -33,5 +34,7 @@ bool mal_is_error(mal_t* mal);
 // Helper to debug
 char* mal_kind_name(mal_kind_e kind);
 
-
+// constructors
+mal_t* new_mal();
+mal_t* new_mal_error(string_t* string);
 #endif

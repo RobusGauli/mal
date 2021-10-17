@@ -7,5 +7,4 @@ char* PRINT(mal_t* mal);
 
 
 // Helpers
-char* num_to_string(int num);
 #endif

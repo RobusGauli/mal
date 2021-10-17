@@ -4,6 +4,7 @@
 
 #include "deps/cdict.h/cdict.h"
 #include "env.h"
+#include "str.h"
 #include "mal.h"
 
 mal_t* core_add(mal_t* arg) {
@@ -66,43 +67,6 @@ cdict__u64 env_hash(mal_t** self, cdict__u64 (*hash) (void*, size_t)) {
   return hash(string, strlen(string));
 }
 
-/*Env root_env() {*/
-  /*cdict_env_t *cdict_env = malloc(sizeof(cdict_env_t));*/
-  /*cdict__init(cdict_env);*/
-  /*cdict__set_comparator(cdict_env, env_comp);*/
-  /*cdict__set_hash(cdict_env, env_hash);*/
-
-  /*// initialize from the core*/
-  /*mal_t* add = malloc(sizeof(mal_t));*/
-  /*add -> type = mal_func;*/
-  /*add -> value = (uint64_t)core_add;*/
-
-  /*// initialize from the core*/
-  /*mal_t* mul = malloc(sizeof(mal_t));*/
-  /*mul -> type = mal_func;*/
-  /*mul-> value = (uint64_t)core_mul;*/
-
-  /*mal_t* sub = malloc(sizeof(mal_t));*/
-  /*sub -> type = mal_func;*/
-  /*sub-> value = (uint64_t)core_sub;*/
-
-  /*mal_t* div  = malloc(sizeof(mal_t));*/
-  /*div  -> type = mal_func;*/
-  /*div -> value = (uint64_t)core_div;*/
-
-  /*// create symbol*/
-  /*mal_t* add_sym = malloc(sizeof(mal_t));*/
-  /*add_sym -> value = (uint64_t)"+";*/
-  /*add_sym -> type = mal_symbol;*/
-
-
-
-
-  /*cdict__add(cdict_env, add_sym, add);*/
-
-  /*return (Env){.current = cdict_env, .prev = NULL};*/
-
-/*}*/
 
 Env* new_env(Env* prev) {
   Env* env = malloc(sizeof(Env));
@@ -133,7 +97,11 @@ mal_t* env_get(Env* env, mal_t* symbol) {
   Env* found = env_find(env, symbol);
 
   if (found == NULL) {
-    assert(0 && "[ERROR]: symbol not found in table");
+    string_t* result = new_str_from_cstr("could not resolve symbol: '");
+    str_append_cstr(result, (char*)symbol -> value);
+    str_append_char(result, '\'');
+    mal_t* err = new_mal_error(result);
+    return err;
   }
 
   mal_t* buffer = NULL;

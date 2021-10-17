@@ -1,9 +1,11 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "types.h"
 #include "env.h"
 #include "eval.h"
 #include "mal.h"
+#include "closure.h"
 
 typedef mal_t *(*mal_func_t)(mal_t *);
 
@@ -12,6 +14,9 @@ bool is_let_form(mal_t *mal) {
 }
 bool is_def_form(mal_t *mal) {
   return mal->type == mal_symbol && strncmp((char *)mal->value, "def!", 4) == 0;
+}
+bool is_func_form(mal_t* mal) {
+  return mal -> type == mal_symbol && strncmp((char*) mal -> value, "fn*", 3) == 0;
 }
 
 mal_t* eval_def_form(mals_t* mals, Env* env) {
@@ -60,6 +65,24 @@ mal_t* eval_let_form(mals_t* mals, Env* env) {
   return evaluated_result;
 }
 
+mal_t* eval_func_form(mals_t* args, Env* env ) {
+  // binds
+  mal_t* binds = cvector__index(args, 1);
+  assert(binds -> type == mal_list);
+  // body
+  mal_t* body = cvector__index(args, 2);
+  // closure
+  closure_t* closure = malloc(sizeof(closure_t));
+  closure -> binds = binds;
+  closure -> env = env;
+  closure -> body = body;
+
+  mal_t* result = new_mal();
+  result -> type = mal_func;
+  result -> value = (u64)(mal_func);
+  return result;
+}
+
 mal_t *EVAL(mal_t *mal, Env *env) {
   switch (mal->type) {
 
@@ -87,8 +110,13 @@ mal_t *EVAL(mal_t *mal, Env *env) {
     if (is_def_form(first)) {
       return eval_def_form(mals, env);
     }
+
+    if (is_func_form(first)) {
+      return eval_func_form(mals, env);
+    }
     // usual invocation
     mal_t *resolved = EVAL(first, env);
+
     if (mal_is_error(resolved)) {
       return resolved;
     }
@@ -119,14 +147,6 @@ mal_t *EVAL(mal_t *mal, Env *env) {
 
   case mal_symbol: {
     mal_t *mal_func = env_get(env, mal);
-    if (mal_func == NULL) {
-      mal_t *error = malloc(sizeof(mal_t));
-      error->type = mal_error;
-      printf("symbol is: %s\n", (char*)mal -> value);
-      error->value = (uint64_t)("could not resolve the symbol");
-      return error;
-    }
-
     return mal_func;
   }
 
