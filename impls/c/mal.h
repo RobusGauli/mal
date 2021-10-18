@@ -16,6 +16,9 @@ typedef enum mal_kind_e{
   mal_error,
   mal_func,
   mal_core_func,
+  mal_bool_true,
+  mal_bool_false,
+  mal_nil,
 } mal_kind_e;
 
 typedef struct mal_t {

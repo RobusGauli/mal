@@ -77,6 +77,23 @@ void setup_core_env(Env* env) {
   env_set(env, create_symbol_for("*"), create_func_for(core_mul));
   env_set(env, create_symbol_for("/"), create_func_for(core_div));
   env_set(env, create_symbol_for("-"), create_func_for(core_sub));
+  env_set(env, create_symbol_for("list"), create_func_for(core_list));
+  env_set(env, create_symbol_for("list?"), create_func_for(core_is_list));
+
+  // symbol for true
+  mal_t* mal_true = malloc(sizeof(mal_t));
+  mal_true ->  type= mal_bool_true;
+  env_set(env, create_symbol_for("true"), mal_true);
+
+  // symbol for false
+  mal_t* mal_false = malloc(sizeof(mal_t));
+  mal_false ->  type= mal_bool_false;
+  env_set(env, create_symbol_for("false"), mal_false);
+
+  // symbol for nil
+  mal_t* nil = new_mal();
+  nil -> type = mal_nil;
+  env_set(env, create_symbol_for("nil"), nil);
 }
 
 int main() {

@@ -24,5 +24,7 @@ mal_t* core_add(mal_t* arg);
 mal_t* core_mul(mal_t* arg);
 mal_t* core_sub(mal_t* arg);
 mal_t* core_div(mal_t* arg);
+mal_t* core_list(mal_t* arg);
+mal_t* core_is_list(mal_t* arg);
 
 #endif

@@ -50,6 +50,27 @@ mal_t* core_div(mal_t* arg) {
   return result;
 }
 
+mal_t* core_list(mal_t* arg) {
+  return arg;
+}
+
+// list?
+mal_t* core_is_list(mal_t* arg) {
+  mals_t* args = (mals_t*)(arg -> value);
+
+  assert(cvector__size(args) == 1);
+  mal_t* value = cvector__index(args, 0);
+
+  mal_t* result = new_mal();
+
+  if (value -> type == mal_list) {
+    result -> type = mal_bool_true;
+  } else {
+    result -> type = mal_bool_false;
+  }
+  return result;
+}
+
 bool env_comp(mal_t** self, mal_t** other) {
   // just compariing
   assert((*self) -> type == mal_symbol);

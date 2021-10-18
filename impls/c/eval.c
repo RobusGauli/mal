@@ -125,7 +125,6 @@ mal_t *EVAL(mal_t *mal, Env *env) {
     }
 
     /*assert(first->type == mal_symbol);*/
-    // usual invocation
     mal_t *resolved = EVAL(first, env);
 
     if (mal_is_error(resolved)) {
@@ -137,8 +136,6 @@ mal_t *EVAL(mal_t *mal, Env *env) {
       closure_t* closure = (closure_t*)resolved -> value;
 
       Env* closed_env = closure -> env;
-      printf(">>>>\n");
-      fflush(stdout);
 
       mals_t *evaluated_mals = malloc(sizeof(mals_t *));
       mals_iterator_t mals_iterator;
@@ -166,28 +163,32 @@ mal_t *EVAL(mal_t *mal, Env *env) {
       return EVAL(closure -> body, new_env);
     }
 
-    mals_t *evaluated_mals = malloc(sizeof(mals_t *));
-    mals_iterator_t mals_iterator;
-    cvector_iterator__init(&mals_iterator, mals);
+    if (resolved -> type == mal_core_func) {
+      mals_t *evaluated_mals = malloc(sizeof(mals_t *));
+      mals_iterator_t mals_iterator;
+      cvector_iterator__init(&mals_iterator, mals);
 
-    cvector_iterator__next(&mals_iterator);
+      cvector_iterator__next(&mals_iterator);
 
-    for (;;) {
-      if (cvector_iterator__done(&mals_iterator))
-        break;
-      mal_t *result = EVAL(cvector_iterator__next(&mals_iterator), env);
-      if (mal_is_error(result)) {
-        return result;
+      for (;;) {
+        if (cvector_iterator__done(&mals_iterator))
+          break;
+        mal_t *result = EVAL(cvector_iterator__next(&mals_iterator), env);
+        if (mal_is_error(result)) {
+          return result;
+        }
+        cvector__add(evaluated_mals, result);
       }
-      cvector__add(evaluated_mals, result);
+
+      mal_func_t func = (mal_func_t)(resolved->value);
+      mal_t *argument = malloc(sizeof(mal_t));
+      argument->type = mal_list;
+      argument->value = (u64)evaluated_mals;
+
+      return func(argument);
     }
 
-    mal_func_t func = (mal_func_t)(resolved->value);
-    mal_t *argument = malloc(sizeof(mal_t));
-    argument->type = mal_list;
-    argument->value = (u64)evaluated_mals;
-
-    return func(argument);
+    return resolved;
   }
 
   case mal_symbol: {

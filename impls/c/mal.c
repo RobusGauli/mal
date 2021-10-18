@@ -26,6 +26,12 @@ char *mal_kind_name(mal_kind_e kind) {
     return "mal_func";
   case mal_core_func:
     return "mal_core_func";
+  case mal_bool_true:
+    return "mal_bool_true";
+  case mal_bool_false:
+      return "mal_bool_false";
+  case mal_nil:
+      return "mal_nil";
   default:
     assert(0 && "unreachable");
   }
