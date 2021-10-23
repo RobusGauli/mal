@@ -8,8 +8,7 @@
 #include "str.h"
 
 char *PRINT(mal_t *mal) {
-  switch (mal->type) {
-  case mal_string: {
+  switch (mal->type) { case mal_string: {
     char *value = cstr_cpy(as_string(mal));
     return value;
   }
@@ -49,11 +48,23 @@ char *PRINT(mal_t *mal) {
   }
 
   case mal_func: {
-    return "#<function>";
+    string_t* string = new_str_from_cstr("<function <lambda> at ");
+    char* ptr_str = cstr_from_ptr(mal);
+    str_append_cstr(string, ptr_str);
+    str_append_char(string, '>');
+    free(ptr_str);
+    return str_ascstr(string);
   }
 
   case mal_core_func: {
-    return "#<core:function>";
+
+    string_t* string = new_str_from_cstr("<function <core:lambda> at ");
+    char* ptr_str = cstr_from_ptr(mal);
+    str_append_cstr(string, ptr_str);
+    free(ptr_str);
+    str_append_char(string, '>');
+    return str_ascstr(string);
+
   }
   case mal_bool_true:
     return "true";

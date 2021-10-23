@@ -1,6 +1,8 @@
+#include <math.h>
+#include <stdio.h>
+
 #include "deps/cvector/cvector.h"
 #include "str.h"
-#include <math.h>
 
 
 char *num_to_string(int num) {
@@ -23,6 +25,28 @@ char *cstr_cpy(char *arg) {
   char *result = malloc(size);
   memcpy(result, arg, size); // should take care of the null character
   return result;
+}
+
+char* cstr_from_i32(int32_t arg) {
+  int size = snprintf(NULL, 0, "%d", arg);
+  if (size <= 0) {
+    return NULL;
+  }
+
+  char* buffer = malloc(sizeof(char) * (size+1));
+  snprintf(buffer, size+1, "%d", arg);
+  return buffer;
+}
+
+char* cstr_from_ptr(void* ptr) {
+  int size = snprintf(NULL, 0, "%p", ptr);
+  if (size <= 0) {
+    return NULL;
+  }
+
+  char* buffer = malloc(sizeof(char) * (size+1));
+  snprintf(buffer, size+1, "%p", ptr);
+  return buffer;
 }
 
 string_t* new_str()  {

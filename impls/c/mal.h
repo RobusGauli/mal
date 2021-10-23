@@ -42,4 +42,6 @@ char* mal_kind_name(mal_kind_e kind);
 // constructors
 mal_t* new_mal();
 mal_t* new_mal_error(string_t* string);
+mal_t* new_mal_false();
+mal_t* new_mal_true();
 #endif

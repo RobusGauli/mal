@@ -73,12 +73,17 @@ mal_t* create_func_for(void* func) {
 }
 
 void setup_core_env(Env* env) {
+  // Initial setup
   env_set(env, create_symbol_for("+"), create_func_for(core_add));
   env_set(env, create_symbol_for("*"), create_func_for(core_mul));
   env_set(env, create_symbol_for("/"), create_func_for(core_div));
   env_set(env, create_symbol_for("-"), create_func_for(core_sub));
+  env_set(env, create_symbol_for(">"), create_func_for(core_greater_than));
   env_set(env, create_symbol_for("list"), create_func_for(core_list));
   env_set(env, create_symbol_for("list?"), create_func_for(core_is_list));
+  env_set(env, create_symbol_for("empty?"), create_func_for(core_is_list_empty));
+  env_set(env, create_symbol_for("count"), create_func_for(core_list_count));
+  env_set(env, create_symbol_for("="), create_func_for(core_is_equal));
 
   // symbol for true
   mal_t* mal_true = malloc(sizeof(mal_t));
@@ -87,7 +92,7 @@ void setup_core_env(Env* env) {
 
   // symbol for false
   mal_t* mal_false = malloc(sizeof(mal_t));
-  mal_false ->  type= mal_bool_false;
+  mal_false -> type = mal_bool_false;
   env_set(env, create_symbol_for("false"), mal_false);
 
   // symbol for nil

@@ -26,5 +26,9 @@ mal_t* core_sub(mal_t* arg);
 mal_t* core_div(mal_t* arg);
 mal_t* core_list(mal_t* arg);
 mal_t* core_is_list(mal_t* arg);
+mal_t* core_is_list_empty(mal_t* arg);
+mal_t *core_is_equal(mal_t *arg);
+mal_t* core_list_count(mal_t* arg);
+mal_t* core_greater_than(mal_t* arg);
 
 #endif

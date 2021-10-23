@@ -1,5 +1,6 @@
 #ifndef STR_H
 #define STR_H
+#include <bits/stdint-intn.h>
 #include "deps/cvector/cvector.h"
 
 CVector(char) string_t;
@@ -25,4 +26,6 @@ char *num_to_string(int num);
 
 // Cstr
 char *cstr_cpy(char *arg);
+char* cstr_from_i32(int32_t arg);
+char* cstr_from_ptr(void* ptr);
 #endif

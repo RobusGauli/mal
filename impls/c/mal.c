@@ -59,3 +59,14 @@ mal_t* new_mal_func(closure_t* closure) {
   mal -> value = (u64)closure;
   return mal;
 }
+mal_t* new_mal_false() {
+  mal_t* mal = new_mal();
+  mal -> type = mal_bool_false;
+  return mal;
+}
+
+mal_t* new_mal_true()  {
+  mal_t* mal = new_mal();
+  mal -> type = mal_bool_true;
+  return mal;
+}
