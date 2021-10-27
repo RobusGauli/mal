@@ -25,6 +25,7 @@ eval: eval.c
 
 env: env.c
 	$(CC) -o env -c $(CFLAGS) env.c
+
 str: str.c
 	$(CC) -o str -c $(CFLAGS) str.c
 

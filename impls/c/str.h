@@ -13,6 +13,7 @@ void str_append(string_t *dest, string_t *src);
 void str_append_cstr(string_t* dest, char* src);
 void str_append_char(string_t* dest, char src);
 void str_append_space(string_t* dest);
+bool str_is_equal(string_t* self, string_t* other);
 char *str_ascstr(string_t *string);
 void str_free(string_t *string);
 size_t str_length(string_t *string);

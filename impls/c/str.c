@@ -70,9 +70,9 @@ char* str_memview(string_t* string) {
 }
 
 char* str_ascstr(string_t* string) {
-  char* buffer = malloc(sizeof(char) * str_length(string) + sizeof(char));
-  memcpy(buffer, str_memview(string), sizeof(char) * str_length(string));
-  buffer[str_length(string) + 1] =  '\0';
+  char* buffer = malloc((sizeof(char) * str_length(string)) + sizeof(char));
+  memcpy(buffer, str_memview(string), (sizeof(char) * str_length(string)));
+  buffer[str_length(string)] =  '\0';
   return buffer;
 
 }
@@ -102,6 +102,27 @@ void str_append_space(string_t* dest) {
 
 void str_free(string_t* string) {
   cvector__free(string);
+}
+
+bool str_is_equal(string_t* self, string_t* other) {
+  if (str_length(self) != str_length(other)) {
+    return false;
+  }
+
+  printf("the length of first string is: %ld\n", str_length(self));
+  printf("the length of second string is: %ld\n", str_length(other));
+  string_iter_t first_iter = new_string_iterator(self);
+  string_iter_t second_iter = new_string_iterator(other);
+
+  for(;;) {
+    if (cvector_iterator__done(&first_iter)) break;
+    if (cvector_iterator__next(&first_iter) != cvector_iterator__next(&second_iter)) {
+      return false;
+    }
+  }
+
+  printf("here>>\n");
+  return true;
 }
 
 // str_iterator

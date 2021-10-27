@@ -70,3 +70,9 @@ mal_t* new_mal_true()  {
   mal -> type = mal_bool_true;
   return mal;
 }
+
+mal_t* new_mal_nil() {
+  mal_t* mal = new_mal();
+  mal -> type = mal_nil;
+  return mal;
+}

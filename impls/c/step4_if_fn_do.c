@@ -52,6 +52,7 @@ void debug(mal_t *mal) {
     break;
   }
 
+
   case mal_error:
     printf("error");
     break;
@@ -79,11 +80,18 @@ void setup_core_env(Env* env) {
   env_set(env, create_symbol_for("/"), create_func_for(core_div));
   env_set(env, create_symbol_for("-"), create_func_for(core_sub));
   env_set(env, create_symbol_for(">"), create_func_for(core_greater_than));
+  env_set(env, create_symbol_for(">="), create_func_for(core_greater_than_equal));
+  env_set(env, create_symbol_for("<"), create_func_for(core_less_than));
+  env_set(env, create_symbol_for("<="), create_func_for(core_less_than_equal));
+  env_set(env, create_symbol_for("="), create_func_for(core_is_equal));
   env_set(env, create_symbol_for("list"), create_func_for(core_list));
   env_set(env, create_symbol_for("list?"), create_func_for(core_is_list));
   env_set(env, create_symbol_for("empty?"), create_func_for(core_is_list_empty));
   env_set(env, create_symbol_for("count"), create_func_for(core_list_count));
-  env_set(env, create_symbol_for("="), create_func_for(core_is_equal));
+  env_set(env, create_symbol_for("pr-str"), create_func_for(core_pr_str));
+  env_set(env, create_symbol_for("str"), create_func_for(core_str));
+  env_set(env, create_symbol_for("prn"), create_func_for(core_prn));
+  env_set(env, create_symbol_for("println"), create_func_for(core_println));
 
   // symbol for true
   mal_t* mal_true = malloc(sizeof(mal_t));

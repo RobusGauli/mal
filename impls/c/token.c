@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 
+#include "utils.h"
 #include "token.h"
 
 const char *token_kind_name(token_t *token) {
@@ -86,19 +88,24 @@ token_t *token_next(char **input) {
     (*input)++;
 
     for (;;) {
+      if (**input == '\\') {
+        // current character
+        (*input)++;
+        // following character
+        (*input)++;
+        continue;
+      }
       if (**input == '\n' || **input == '\0') {
-        token_t *token = malloc(sizeof(token_t));
-        token->buffer = start;
-        token->token_kind = token_kind_eol;
-        token->len = ((*input) - start);
+        token_t* token = malloc(sizeof(token_t));
+        token -> token_kind = token_kind_eol;
         return token;
       }
 
       if (**input == '"') {
         token_t *token = malloc(sizeof(token_t));
-        token->buffer = start;
+        token->buffer = start+1;
         token->token_kind = token_kind_string;
-        token->len = ((*input) - start + 1);
+        token->len = ((*input) - start-1);
         (*input)++;
         return token;
       }

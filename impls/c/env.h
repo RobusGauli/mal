@@ -30,5 +30,14 @@ mal_t* core_is_list_empty(mal_t* arg);
 mal_t *core_is_equal(mal_t *arg);
 mal_t* core_list_count(mal_t* arg);
 mal_t* core_greater_than(mal_t* arg);
+mal_t* core_greater_than_equal(mal_t* arg);
+mal_t* core_less_than(mal_t* arg);
+mal_t* core_less_than_equal(mal_t* arg);
+
+// string
+mal_t* core_pr_str(mal_t* arg);
+mal_t* core_str(mal_t* arg);
+mal_t* core_prn(mal_t* arg);
+mal_t* core_println(mal_t* arg);
 
 #endif

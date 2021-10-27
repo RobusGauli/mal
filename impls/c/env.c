@@ -7,6 +7,7 @@
 #include "mal.h"
 #include "str.h"
 #include "types.h"
+#include "print.h"
 
 mal_t *core_add(mal_t *arg) {
   mals_t *args = (mals_t *)(arg->value);
@@ -131,6 +132,53 @@ mal_t *core_greater_than(mal_t *arg) {
   return result;
 }
 
+mal_t* core_less_than(mal_t* arg) {
+
+  mals_t *args = (mals_t*)(arg -> value);
+  assert(cvector__size(args) == 2);
+  mal_t* a_mal  = cvector__index(args, 0);
+  mal_t* b_mal = cvector__index(args, 1);
+
+  assert(a_mal -> type == mal_number);
+  assert(b_mal -> type == mal_number);
+
+  if (a_mal -> value < b_mal -> value) {
+    return new_mal_true();
+  }
+  return new_mal_false();
+}
+mal_t* core_less_than_equal(mal_t* arg){
+
+  mals_t *args = (mals_t*)(arg -> value);
+  assert(cvector__size(args) == 2);
+  mal_t* a_mal  = cvector__index(args, 0);
+  mal_t* b_mal = cvector__index(args, 1);
+
+  assert(a_mal -> type == mal_number);
+  assert(b_mal -> type == mal_number);
+
+  if (a_mal -> value <= b_mal -> value) {
+    return new_mal_true();
+  }
+  return new_mal_false();
+}
+
+mal_t* core_greater_than_equal(mal_t* arg){
+
+  mals_t *args = (mals_t*)(arg -> value);
+  assert(cvector__size(args) == 2);
+  mal_t* a_mal  = cvector__index(args, 0);
+  mal_t* b_mal = cvector__index(args, 1);
+
+  assert(a_mal -> type == mal_number);
+  assert(b_mal -> type == mal_number);
+
+  if (a_mal -> value >= b_mal -> value) {
+    return new_mal_true();
+  }
+  return new_mal_false();
+}
+
 mal_t *_core_is_equal(mal_t *first, mal_t *second) {
   switch (first->type) {
   case mal_bool_false: {
@@ -193,6 +241,15 @@ mal_t *_core_is_equal(mal_t *first, mal_t *second) {
     return new_mal_false();
   }
 
+  case mal_string: {
+    string_t *first_string = (string_t *)(first->value);
+    string_t *second_string = (string_t *)(second->value);
+    if (str_is_equal(first_string, second_string)) {
+      return new_mal_true();
+    }
+    return new_mal_false();
+  }
+
   default:
     assert(0 && "unreachable");
   }
@@ -218,8 +275,107 @@ mal_t *core_is_equal(mal_t *arg) {
   return _core_is_equal(first, second);
 }
 
+mal_t* core_pr_str(mal_t* arg) {
+  string_t* result = new_str();
+
+  mal_t* mal_result = new_mal();
+  mals_t* args = (mals_t*) (arg -> value);
+  mals_iterator_t iterator = mals_iterator(args);
+
+  for(;;) {
+    if (cvector_iterator__done(&iterator)) break;
+    mal_t* next = cvector_iterator__next(&iterator);
+    char* next_result = pr_str(next, true);
+    str_append_cstr(result, next_result);
+    if (!cvector_iterator__done(&iterator)) {
+      str_append_space(result);
+    }
+    free(next_result);
+  }
+
+  mal_result -> type = mal_string;
+  mal_result -> value = (u64)(result);
+  return mal_result;
+}
+
+mal_t* core_str(mal_t* arg) {
+  string_t* result = new_str();
+
+  mal_t* mal_result = new_mal();
+  mals_t* args = (mals_t*) (arg -> value);
+  mals_iterator_t iterator = mals_iterator(args);
+
+  for(;;) {
+    if (cvector_iterator__done(&iterator)) break;
+
+    mal_t* next = cvector_iterator__next(&iterator);
+
+    char* next_result = pr_str(next, false);
+    str_append_cstr(result, next_result);
+    free(next_result);
+  }
+
+  mal_result -> type = mal_string;
+  mal_result -> value = (u64)(result);
+  return mal_result;
+
+}
+
+mal_t* core_prn(mal_t* arg) {
+  string_t* result = new_str();
+
+  mal_t* mal_result = new_mal();
+  mals_t* args = (mals_t*)(arg -> value);
+  mals_iterator_t iterator = mals_iterator(args);
+
+  for(;;) {
+    if (cvector_iterator__done(&iterator)) break;
+
+    mal_t* next = cvector_iterator__next(&iterator);
+
+    char* next_result = pr_str(next, true);
+    str_append_cstr(result, next_result);
+
+    if (!cvector_iterator__done(&iterator)) {
+      str_append_space(result);
+    }
+
+    free(next_result);
+  }
+  char* cstr_result = str_ascstr(result);
+  printf("%s\n", cstr_result);
+  str_free(result);
+  return new_mal_nil();
+}
+
+mal_t* core_println(mal_t* arg) {
+  string_t* result = new_str();
+
+  mal_t* mal_result = new_mal();
+  mals_t* args = (mals_t*)(arg -> value);
+  mals_iterator_t iterator = mals_iterator(args);
+
+  for(;;) {
+    if (cvector_iterator__done(&iterator)) break;
+
+    mal_t* next = cvector_iterator__next(&iterator);
+
+    char* next_result = pr_str(next, false);
+    str_append_cstr(result, next_result);
+
+    if (!cvector_iterator__done(&iterator)) {
+      str_append_space(result);
+    }
+
+    free(next_result);
+  }
+  char* cstr_result = str_ascstr(result);
+  printf("%s\n", cstr_result);
+  str_free(result);
+  return new_mal_nil();
+}
+
 bool env_comp(mal_t **self, mal_t **other) {
-  // just compariing
   assert((*self)->type == mal_symbol);
 
   mal_t *m_self = *self;
@@ -253,20 +409,31 @@ Env *new_env_with_binds(Env *prev, mal_t *binds, mal_t *exprs) {
   mals_t *binds_list = (mals_t *)(binds->value);
   mals_t *exprs_list = (mals_t *)(exprs->value);
 
-  assert(cvector__size(binds_list) == cvector__size(exprs_list));
+  // check the binds_list
+  if (cvector__size(binds_list) > 0) {
+    mal_t* symbol = cvector__index(binds_list, 0);
 
-  mals_iterator_t binds_iter = mals_iterator(binds_list);
-  mals_iterator_t exprs_iter = mals_iterator(exprs_list);
+    if (strncmp((char*)symbol -> value, "&", 1) == 0) {
+      if (cvector__size(binds_list) > 1) {
+        mal_t* second_symbol = cvector__index(binds_list, 1);
+        env_set(env, second_symbol, exprs);
+      }
+    } else {
+      assert(cvector__size(binds_list) == cvector__size(exprs_list));
 
-  for (;;) {
-    if (cvector_iterator__done(&binds_iter))
-      break;
+      mals_iterator_t binds_iter = mals_iterator(binds_list);
+      mals_iterator_t exprs_iter = mals_iterator(exprs_list);
 
-    mal_t *key = cvector_iterator__next(&binds_iter);
-    mal_t *value = cvector_iterator__next(&exprs_iter);
-    env_set(env, key, value);
+      for (;;) {
+        if (cvector_iterator__done(&binds_iter))
+          break;
+
+        mal_t *key = cvector_iterator__next(&binds_iter);
+        mal_t *value = cvector_iterator__next(&exprs_iter);
+        env_set(env, key, value);
+      }
+    }
   }
-
   return env;
 }
 

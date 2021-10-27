@@ -51,7 +51,6 @@ mal_t *read_form(tokens_iterator_t *tokens_iterator) {
 }
 
 mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
-  mal_t *atom = malloc(sizeof(mal_t));
 
   token_t *token = cvector_iterator__next(tokens_iterator);
 
@@ -61,18 +60,44 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
     for (size_t i = 0; i < token->len; ++i) {
       number = number * 10 + ((token->buffer)[i] - '0');
     }
+    mal_t *atom = malloc(sizeof(mal_t));
     atom->type = mal_number;
     atom->value = number;
     return atom;
   }
 
   case token_kind_string: {
-    // string
-    char *string = malloc((sizeof(char) * token->len) + sizeof(char));
-    memcpy(string, token->buffer, token->len);
-    string[token->len] = '\0';
+    string_t* string = new_str();
+
+    // just making sure things are well worth it
+    size_t size = token -> len;
+    size_t index = 0;
+    while (index < token -> len) {
+      char ch = token -> buffer[index];
+      if (ch == '\\') {
+        if (token -> buffer[index+1] == 'n')  {
+          str_append_char(string, '\n');
+          ++index;
+        } else if (token -> buffer[index+1] == '"') {
+          str_append_char(string, '"');
+          ++index;
+        } else if (token -> buffer[index+1] == '\\')  {
+          str_append_char(string, '\\');
+          ++index;
+        } else {
+          str_append_char(string, '\\');
+          // no increment necessary
+        }
+      } else {
+        str_append_char(string, token -> buffer[index]);
+      }
+      ++index;
+    }
+
+    mal_t *atom = malloc(sizeof(mal_t));
     atom->type = mal_string;
     atom->value = (u64)string;
+
     return atom;
   }
 
@@ -80,6 +105,7 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
     char *string = malloc((sizeof(char) * token->len) + sizeof(char));
     memcpy(string, token->buffer, token->len);
     string[token->len] = '\0';
+    mal_t *atom = malloc(sizeof(mal_t));
     atom->type = mal_symbol;
     atom->value = (u64)(string);
     return atom;
@@ -89,14 +115,15 @@ mal_t *read_atom(tokens_iterator_t *tokens_iterator) {
     char *string = malloc((sizeof(char) * token->len) + sizeof(char));
     memcpy(string, token->buffer, token->len);
     string[token->len] = '\0';
+    mal_t *atom = malloc(sizeof(mal_t));
     atom->type = mal_symbol;
     atom->value = (u64)(string);
     return atom;
   }
 
   case token_kind_eol: {
-    atom->type = mal_error;
-    return atom;
+    string_t* string = new_str_from_cstr("Error: \"Expected '\\\"', got EOF");
+    return new_mal_error(string);
   }
 
   case token_kind_unreachable:

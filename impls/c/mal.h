@@ -44,4 +44,5 @@ mal_t* new_mal();
 mal_t* new_mal_error(string_t* string);
 mal_t* new_mal_false();
 mal_t* new_mal_true();
+mal_t* new_mal_nil();
 #endif

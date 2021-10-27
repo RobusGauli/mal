@@ -25,6 +25,28 @@ bool is_if_form(mal_t *mal) {
   return mal->type == mal_symbol && strncmp((char *)mal->value, "if", 2) == 0;
 }
 
+bool is_do_form(mal_t *mal) {
+  return mal->type == mal_symbol && strncmp((char *)mal->value, "do", 2) == 0;
+}
+
+mal_t* eval_do_form(mals_t* mals, Env* env) {
+  mals_iterator_t iterator = mals_iterator(mals);
+  cvector_iterator__next(&iterator);
+
+  if (cvector_iterator__done(&iterator)) {
+    return new_mal_nil();
+  }
+
+  for(;;) {
+    mal_t* next = cvector_iterator__next(&iterator);
+    if (cvector_iterator__done(&iterator)) {
+      return EVAL(next, env);
+    } else {
+      EVAL(next, env);
+    }
+  }
+}
+
 mal_t *eval_mal_func(mals_t *mals, Env *env) {
   printf("evaluating the function\n");
   fflush(stdout);
@@ -122,7 +144,7 @@ mal_t *eval_if_form(mals_t *args, Env *env) {
 
   if (!(predicate_result->type == mal_nil) &&
       !(predicate_result->type == mal_bool_false)) {
-    mal_t* result = EVAL(cvector_iterator__next(&iterator), env);
+    mal_t *result = EVAL(cvector_iterator__next(&iterator), env);
     return result;
   }
 
@@ -131,8 +153,8 @@ mal_t *eval_if_form(mals_t *args, Env *env) {
 
   // check if we have falsy evaluable value
   if (cvector_iterator__done(&iterator)) {
-    mal_t* nil = new_mal();
-    nil -> type = mal_nil;
+    mal_t *nil = new_mal();
+    nil->type = mal_nil;
     return nil;
   }
 
@@ -172,6 +194,10 @@ mal_t *EVAL(mal_t *mal, Env *env) {
 
     if (is_if_form(first)) {
       return eval_if_form(mals, env);
+    }
+
+    if (is_do_form(first)) {
+      return eval_do_form(mals, env);
     }
 
     /*assert(first->type == mal_symbol);*/
