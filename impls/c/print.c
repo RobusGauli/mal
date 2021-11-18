@@ -65,7 +65,12 @@ char *pr_str(mal_t *mal, bool print_readably) {
         str_append_space(string);
       }
       mal_t *mal = cvector_iterator__next(&mals_iter);
-      char *mal_printable_string = PRINT(mal);
+      char* mal_printable_string = NULL;
+      if (print_readably) {
+        mal_printable_string = pr_str(mal, true);
+      } else {
+        mal_printable_string = pr_str(mal, false);
+      }
       str_append_cstr(string, mal_printable_string);
       free(mal_printable_string);
     }

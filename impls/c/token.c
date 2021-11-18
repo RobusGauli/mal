@@ -133,10 +133,20 @@ token_t *token_next(char **input) {
 
   token_t *token = malloc(sizeof(token_t));
   token->buffer = _start;
-  token->token_kind = num ? token_kind_number : token_kind_symbol;
-  token->len = (*input - _start);
-
-  return token;
+  if (num) {
+    token -> token_kind = token_kind_number;
+    token -> len = (*input - _start);
+    return token;
+  } else if (strncmp(token -> buffer, ":", 1) == 0) {
+    token -> token_kind = token_kind_string;
+    token -> buffer = _start+1;
+    token -> len = (*input - token -> buffer);
+    return token;
+  } else {
+    token->token_kind = token_kind_symbol;
+    token->len = (*input - _start);
+    return token;
+  }
 }
 
 tokens_t tokens(char *input) {

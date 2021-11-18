@@ -430,23 +430,22 @@ Env *new_env_with_binds(Env *prev, mal_t *binds, mal_t *exprs) {
       break;
 
     mal_t *key = cvector_iterator__next(&binds_iter);
-    // check the symbol
     assert(key -> type == mal_symbol);
     char* key_cstr = (char*)key -> value;
     if (strncmp(key_cstr, "&", 1) == 0) {
-      if (!cvector_iterator__done(&binds_iter)) {
-        mal_t* to_bound_key = cvector_iterator__next(&binds_iter);
-        mals_t* to_bound_values = _core_create_mals_from_iter(&exprs_iter);
-        mal_t* to_bound_value = new_mal();
-        to_bound_value -> type = mal_list;
-        to_bound_value -> value = (u64)(to_bound_values);
-        env_set(env, to_bound_key, to_bound_value);
+      if (cvector_iterator__done(&binds_iter)) {
+        return env;
       }
-      break;
-    } else {
-      mal_t* value = cvector_iterator__next(&exprs_iter);
-      env_set(env, key, value);
+      mal_t* to_bound_key = cvector_iterator__next(&binds_iter);
+      mals_t* to_bound_values = _core_create_mals_from_iter(&exprs_iter);
+      mal_t* to_bound_value = new_mal();
+      to_bound_value -> type = mal_list;
+      to_bound_value -> value = (u64)(to_bound_values);
+      env_set(env, to_bound_key, to_bound_value);
+      return env;
     }
+    mal_t* value = cvector_iterator__next(&exprs_iter);
+    env_set(env, key, value);
   }
   return env;
 }

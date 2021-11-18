@@ -29,8 +29,9 @@ mal_t *read_list(tokens_iterator_t *tokens_iterator) {
   }
 
   if (!balanced) {
-    fprintf(stderr, "Unbalanced paren\n");
-    exit(1);
+    string_t* string = new_str_from_cstr("unbalanced paren");
+    mal_t* mal = new_mal_error(string);
+    return mal;
   }
 
   return mal;

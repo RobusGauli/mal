@@ -57,7 +57,7 @@ mal_t *eval_def_form(mals_t *mals, Env *env) {
 
   // take second argument
   mal_t *key = cvector__index(mals, 1);
-  assert(key->type == mal_symbol);
+  /*assert(key->type == mal_symbol);*/
 
   mal_t *value = cvector__index(mals, 2);
   // evaluated

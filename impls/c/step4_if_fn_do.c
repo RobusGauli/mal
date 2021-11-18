@@ -109,6 +109,10 @@ void setup_core_env(Env* env) {
   env_set(env, create_symbol_for("nil"), nil);
 }
 
+char* rep(char* input, Env* env) {
+  return PRINT(EVAL(READ(input), env));
+}
+
 int main() {
 
   // create a new environment/
@@ -116,6 +120,9 @@ int main() {
   Env* env = new_env(NULL);
 
   setup_core_env(env);
+
+  // 'not' function using mal itself
+  rep("(def! not (fn* (a) (if a false true)))", env);
 
   for (;;) {
     char *input = readline("user> ");
